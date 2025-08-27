@@ -1,0 +1,23 @@
+{
+  "name": "wallet-to-webapp-demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "serve -s"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/interop-alliance/wallet-to-webapp-demo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/interop-alliance/wallet-to-webapp-demo/issues"
+  },
+  "homepage": "https://github.com/interop-alliance/wallet-to-webapp-demo#readme",
+  "description": "",
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
