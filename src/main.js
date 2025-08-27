@@ -1,5 +1,5 @@
 // ======= CONFIG =======
-const EXCHANGE_SERVER_URL = "https://devlinked-claims-author.vercel.app"; 
+const EXCHANGE_SERVER_URL = "https://allskillscount.org"; 
 const WALLET_DEEP_LINK = "https://lcw.app/request";
 // ======================
 
