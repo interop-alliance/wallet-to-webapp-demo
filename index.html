@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Wallet-to-WebApp Demo</title>
+
+  <!-- MaterializeCSS -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    rel="stylesheet"
+  />
+  <!-- QR Code generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    #qr {
+      margin: 20px auto;
+      display: flex;
+      justify-content: center;
+    }
+    pre {
+      background: #f6f8fa;
+      padding: 12px;
+      border-radius: 6px;
+      max-height: 420px;
+      overflow: auto;
+      font-size: 0.9rem;
+    }
+    .spinner {
+      display: none;
+      margin: 20px auto;
+      text-align: center;
+    }
+    .actions {
+      display: none;
+      gap: 8px;
+      margin: 10px 0 0 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h4 class="center-align">This is a demo to test interop between<br /> web applications and credential wallets</h4>
+
+    <div class="row center-align">
+      <a id="requestBtn" class="btn blue">Request a single VC</a>
+    </div>
+
+    <div id="qr"></div>
+
+    <div id="spinner" class="spinner">
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left"><div class="circle"></div></div>
+          <div class="gap-patch"><div class="circle"></div></div>
+          <div class="circle-clipper right"><div class="circle"></div></div>
+        </div>
+      </div>
+      <p>Waiting for wallet...</p>
+    </div>
+
+    <h5>Result</h5>
+    <pre id="result">No credential yet.</pre>
+
+    <div id="actions" class="actions">
+      <a id="copyBtn" class="btn-flat">Copy JSON</a>
+      <a id="downloadBtn" class="btn-flat">Download JSON</a>
+    </div>
+  </div>
+
+  <script src="src/main.js"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
+  </script>
+</body>
+</html>
