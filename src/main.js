@@ -1,6 +1,7 @@
 // ======= CONFIG =======
-const EXCHANGE_SERVER_URL = "https://allskillscount.org"; 
+const EXCHANGE_SERVER_URL = "https://verifierplus.org"; 
 const WALLET_DEEP_LINK = "https://lcw.app/request";
+const CORS_PROXY = "https://corsproxy.io/?"; 
 // ======================
 
 const randomPageId = (crypto?.randomUUID?.() || String(Math.random()).slice(2));
@@ -15,7 +16,7 @@ let latestPayload = null;
 // Initialize the exchange session
 (async () => {
   try {
-    await fetch(exchangeUrl, {
+    await fetch(CORS_PROXY + exchangeUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ appInstanceDid: demoAppDid })
@@ -43,7 +44,7 @@ function safeParse(s) { try { return JSON.parse(s); } catch { return null; } }
 async function pollOnce(onFetchVP) {
   try {
     console.log("Polling:", exchangeUrl);
-    const res = await fetch(exchangeUrl);
+    const res = await fetch(CORS_PROXY + exchangeUrl);
     if (!res.ok) return;
 
     const text = await res.text();
@@ -90,6 +91,7 @@ function startPolling() {
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("requestBtn");
   const qrDiv = document.getElementById("qr");
+  const qrTextPre = document.getElementById("qrText");
 
   btn.addEventListener("click", () => {
     qrDiv.innerHTML = "";
@@ -98,13 +100,17 @@ document.addEventListener("DOMContentLoaded", () => {
         text: lcwRequestUrl,
         width: 256,
         height: 256,
-        correctLevel: QRCode.CorrectLevel.L // capacity > H; avoids overflow
+        correctLevel: QRCode.CorrectLevel.L
       });
     } catch (e) {
       console.warn("QR too long, showing link instead:", e);
       qrDiv.innerHTML =
         `<a href="${lcwRequestUrl}" target="_blank" rel="noopener">Open in Wallet</a>`;
     }
+
+    // Show both URL and JSON
+    qrTextPre.textContent = 
+      `Wallet deep link:\n${lcwRequestUrl}\n\nDecoded request JSON:\n${JSON.stringify(chapiRequest, null, 2)}`;
 
     startPolling();
   });
