@@ -48,95 +48,98 @@
       </div>
     </div>
 
-    <!-- Tab 1: Request credential (existing content) -->
-    <div id="tab-request">
-      <div class="row center-align">
-        <a id="requestBtn" class="btn green">Request a single VC</a>
-      </div>
-
-      <div id="qr"></div>
-      <pre id="qrText">QR code not generated yet, click Request a single VC.</pre>
-
-      <div id="spinner" class="spinner">
-        <div class="preloader-wrapper big active">
-          <div class="spinner-layer spinner-blue-only">
-            <div class="circle-clipper left"><div class="circle"></div></div>
-            <div class="gap-patch"><div class="circle"></div></div>
-            <div class="circle-clipper right"><div class="circle"></div></div>
-          </div>
+    <div class="col s12 tabs-content">
+      <!-- Tab 1: Request credential (existing content) -->
+      <div id="tab-request" class="tab-content active">
+        <div class="row center-align">
+          <a id="requestBtn" class="btn green">Request a single VC</a>
         </div>
-        <p>Waiting for wallet...</p>
+
+        <div id="qr"></div>
+        <pre id="qrText">QR code not generated yet, click Request a single VC.</pre>
+
+        <div id="spinner" class="spinner">
+          <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left"><div class="circle"></div></div>
+              <div class="gap-patch"><div class="circle"></div></div>
+              <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+          </div>
+          <p>Waiting for wallet...</p>
+        </div>
+
+        <h5>Result</h5>
+        <pre id="result" class="language-json">No credential yet.</pre>
+
+        <div id="actions" class="actions">
+          <a id="copyBtn" class="btn waves-effect waves-light green lighten-1">
+            <i class="material-icons left">content_copy</i> Copy JSON
+          </a>
+          <a id="downloadBtn" class="btn waves-effect waves-light green lighten-2">
+            <i class="material-icons left">download</i> Download JSON
+          </a>
+        </div>
       </div>
 
-      <h5>Result</h5>
-      <pre id="result" class="language-json">No credential yet.</pre>
+      <!-- Tab 2: DID Login -->
+      <div id="tab-did-login" class="tab-content">
+        <div class="row center-align">
+          <a id="didLoginBtn" class="btn waves-effect waves-light green">
+            <i class="material-icons left">login</i> Login with DID
+          </a>
+        </div>
 
-      <div id="actions" class="actions">
-        <a id="copyBtn" class="btn waves-effect waves-light green lighten-1">
-          <i class="material-icons left">content_copy</i> Copy JSON
-        </a>
-        <a id="downloadBtn" class="btn waves-effect waves-light green lighten-2">
-          <i class="material-icons left">download</i> Download JSON
-        </a>
-      </div>
-    </div>
+        <div id="didQr"></div>
+        <pre id="didQrText">QR code not generated yet, click Login with DID.</pre>
 
-    <!-- Tab 2: DID Login -->
-    <div id="tab-did-login">
-      <div class="row center-align">
-        <a id="didLoginBtn" class="btn waves-effect waves-light green">
-          <i class="material-icons left">login</i> DID Login
-        </a>
+        <div id="didSpinner" class="spinner">
+          <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left"><div class="circle"></div></div>
+              <div class="gap-patch"><div class="circle"></div></div>
+              <div class="circle-clipper right"><div class="circle"></div></div>
+            </div>
+          </div>
+          <p>Waiting for wallet...</p>
+        </div>
+
+        <h5>DID Authentication Result</h5>
+        <pre id="didResult" class="language-json">No authentication result yet.</pre>
       </div>
-      
-      <div class="row">
-        <div class="col s12">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">DID Authentication</span>
-              <p>Authenticate using your Decentralized Identifier (DID) through your wallet.</p>
-              <div id="didLoginResult" class="center-align">
-                <p class="grey-text">Click the button above to initiate DID authentication</p>
+
+      <!-- Tab 3: Request zCap -->
+      <div id="tab-zcap" class="tab-content">
+        <div class="row center-align">
+          <a id="zcapBtn" class="btn waves-effect waves-light green">
+            <i class="material-icons left">security</i> Request zCap
+          </a>
+        </div>
+        
+        <div class="row">
+          <div class="col s12">
+            <div class="card">
+              <div class="card-content">
+                <span class="card-title">Zero-Knowledge Capability (zCap)</span>
+                <p>Request a zero-knowledge capability from your wallet for secure authorization.</p>
+                <div id="zcapResult" class="center-align">
+                  <p class="grey-text">Click the button above to request zCap</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Tab 3: Request zCap -->
-    <div id="tab-zcap">
-      <div class="row center-align">
-        <a id="zcapBtn" class="btn waves-effect waves-light orange">
-          <i class="material-icons left">security</i> Request zCap
-        </a>
-      </div>
-      
-      <div class="row">
-        <div class="col s12">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Zero-Knowledge Capability (zCap)</span>
-              <p>Request a zero-knowledge capability from your wallet for secure authorization.</p>
-              <div id="zcapResult" class="center-align">
-                <p class="grey-text">Click the button above to request zCap</p>
-              </div>
-            </div>
-          </div>
+      <!-- Tab 4: Sign via Wallet -->
+      <div id="tab-sign" class="tab-content">
+        <div class="row center-align">
+          <a id="signBtn" class="btn waves-effect waves-light green">
+            <i class="material-icons left">edit</i> Sign Message
+          </a>
         </div>
-      </div>
-    </div>
-
-    <!-- Tab 4: Sign via Wallet -->
-    <div id="tab-sign">
-      <div class="row center-align">
-        <a id="signBtn" class="btn waves-effect waves-light red">
-          <i class="material-icons left">edit</i> Sign Message
-        </a>
-      </div>
-      
-      <div class="row">
-        <div class="col s12">
+        
+        <div class="row">
           <div class="card">
             <div class="card-content">
               <span class="card-title">Message Signing</span>
