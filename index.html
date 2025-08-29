@@ -12,6 +12,14 @@
   <!-- QR Code generator -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+  <!-- Highlight.js -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+  />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+
   <style>
     #qr {
       margin: 20px auto;
@@ -62,7 +70,7 @@
     </div>
 
     <h5>Result</h5>
-    <pre id="result">No credential yet.</pre>
+    <pre id="result" class="language-json">No credential yet.</pre>
 
     <div id="actions" class="actions">
       <a id="copyBtn" class="btn-flat">Copy JSON</a>
