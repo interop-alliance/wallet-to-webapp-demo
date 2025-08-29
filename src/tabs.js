@@ -1,12 +1,23 @@
-// tabs.js - Handles tab switching with the new tab loader system
-
-document.addEventListener('DOMContentLoaded', function() {
-  // Wait for MaterializeCSS to be available
+function main () {
   const initTabs = () => {
     if (typeof M !== 'undefined' && M.Tabs) {
       // Initialize Materialize tabs
       const tabs = document.querySelectorAll('.tabs');
       M.Tabs.init(tabs);
+
+      // Get all tab content elements
+      const tabContents = document.querySelectorAll('.tab-content');
+      
+      // Initially hide all tabs except the first one
+      tabContents.forEach((content, index) => {
+        if (index === 0) {
+          content.style.display = 'block';
+          content.classList.add('active');
+        } else {
+          content.style.display = 'none';
+          content.classList.remove('active');
+        }
+      });
 
       // Add tab change event listener
       const tabLinks = document.querySelectorAll('.tabs .tab a');
@@ -14,9 +25,17 @@ document.addEventListener('DOMContentLoaded', function() {
         link.addEventListener('click', function(e) {
           const targetTab = this.getAttribute('href').substring(1); // Remove the # from href
           
-          // Load the tab content if not already loaded
-          if (window.tabLoader) {
-            window.tabLoader.loadTab(targetTab);
+          // Hide all tab contents
+          tabContents.forEach(content => {
+            content.style.display = 'none';
+            content.classList.remove('active');
+          });
+          
+          // Show the selected tab content
+          const selectedTab = document.getElementById(targetTab);
+          if (selectedTab) {
+            selectedTab.style.display = 'block';
+            selectedTab.classList.add('active');
           }
         });
       });
@@ -30,4 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Start initialization
   initTabs();
-});
+}
+
+document.addEventListener('DOMContentLoaded', main);

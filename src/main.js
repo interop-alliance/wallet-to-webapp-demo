@@ -44,6 +44,26 @@ const chapiRequest = {
 const encodedRequest = encodeURI(JSON.stringify(chapiRequest));
 const lcwRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedRequest}`;
 
+// Build DID authentication request object
+const didAuthRequest = {
+  "credentialRequestOrigin": APP_URL,
+  "verifiablePresentationRequest": {
+    "interact": {
+      "type": "UnmediatedHttpPresentationService2021",
+      "serviceEndpoint": exchangeUrl
+    },
+    "query": [{
+      "type": "DIDAuthentication",
+      "acceptedMethods": [{"method": "key"}]
+    }],
+    // hardcode the challenge for now, we'll generate and verify it in another PR
+    "challenge": "99612b24-63d9-11ea-b99f-4f66f3e4f81a",
+    "domain": APP_URL  // yes, the domain appears twice, but this is for different layers
+  }
+};
+const encodedDidAuthRequest = encodeURI(JSON.stringify(didAuthRequest));
+const lcwDidAuthRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedDidAuthRequest}`;
+
 // Polling once
 async function pollOnce(onFetch) {
   try {
@@ -133,4 +153,93 @@ document.addEventListener("DOMContentLoaded", () => {
     // Begin polling for wallet response
     startPolling();
   });
+
+  // Initialize DID authentication functionality
+  initDidAuthentication();
 });
+
+// Initialize DID authentication functionality
+function initDidAuthentication() {
+  const didLoginBtn = document.getElementById("didLoginBtn");
+  const didQrDiv = document.getElementById("didQr");
+  const didQrTextPre = document.getElementById("didQrText");
+  const didSpinner = document.getElementById("didSpinner");
+  const didResult = document.getElementById("didResult");
+
+  if (didLoginBtn) {
+    didLoginBtn.addEventListener("click", () => {
+      // Render QR or fallback link for DID auth
+      didQrDiv.innerHTML = "";
+      try {
+        new QRCode(didQrDiv, {
+          text: lcwDidAuthRequestUrl,
+          width: 256,
+          height: 256,
+          correctLevel: QRCode.CorrectLevel.L
+        });
+      } catch (e) {
+        console.warn("QR too long, showing link instead:", e);
+        didQrDiv.innerHTML = `<a href="${lcwDidAuthRequestUrl}" target="_blank" rel="noopener">Open in Wallet</a>`;
+      }
+
+      // Show URL and the decoded request JSON (highlighted)
+      didQrTextPre.textContent = `Wallet deep link:\n${lcwDidAuthRequestUrl}\n\nDecoded request JSON:`;
+      const code = document.createElement("code");
+      code.className = "language-json";
+      code.textContent = JSON.stringify(didAuthRequest, null, 2);
+      didQrTextPre.appendChild(document.createElement("br"));
+      didQrTextPre.appendChild(code);
+      highlight(code);
+
+      // Begin polling for DID auth response
+      startDidAuthPolling();
+    });
+  }
+}
+
+// Start polling loop for DID authentication
+function startDidAuthPolling() {
+  if (pollInterval) return;
+  const didSpinner = document.getElementById("didSpinner");
+  const didResult = document.getElementById("didResult");
+  
+  show(didSpinner);
+
+  pollInterval = setInterval(async () => {
+    await pollOnce((obj) => {
+      clearInterval(pollInterval);
+      pollInterval = null;
+      hide(didSpinner);
+
+      window.latestPayload = obj;
+      
+      // Display DID authentication result
+      if (didResult) {
+        didResult.textContent = JSON.stringify(obj, null, 2);
+        highlight(didResult);
+      }
+      
+      // Show success message
+      if (window.M?.toast) {
+        M.toast({ html: "DID authentication successful!" });
+      }
+    });
+  }, 3000);
+
+  // Stop after 2 minutes
+  setTimeout(() => {
+    if (!pollInterval) return;
+    clearInterval(pollInterval);
+    pollInterval = null;
+    hide(didSpinner);
+
+    if (didResult) {
+      didResult.textContent = "Timed out waiting for wallet. Please rescan or refresh.";
+      highlight(didResult);
+    }
+    
+    if (window.M?.toast) {
+      M.toast({ html: "DID authentication timed out" });
+    }
+  }, 120000);
+}

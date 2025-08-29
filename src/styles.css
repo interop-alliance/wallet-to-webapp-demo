@@ -14,6 +14,15 @@
   margin-top: 2rem;
 }
 
+/* Tab content visibility */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
 #tab-request h5,
 #tab-did-login h5,
 #tab-zcap h5,
