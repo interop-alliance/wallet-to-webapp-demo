@@ -71,7 +71,9 @@ function startPolling() {
       stopSpinner();
 
       latestPayload = obj;
-      document.getElementById("result").textContent = JSON.stringify(obj, null, 2);
+      const resultEl = document.getElementById("result");
+      resultEl.textContent = JSON.stringify(obj, null, 2);
+      if (window.hljs) hljs.highlightElement(resultEl);
     });
   }, 3000);
 
@@ -81,8 +83,10 @@ function startPolling() {
       clearInterval(pollInterval);
       pollInterval = null;
       stopSpinner();
-      document.getElementById("result").textContent =
+      const resultEl = document.getElementById("result");
+      resultEl.textContent =
         "Timed out waiting for wallet. Please rescan or refresh.";
+      if (window.hljs) hljs.highlightElement(resultEl);
       M.toast?.({ html: "Polling timed out" });
     }
   }, 120000);
@@ -100,17 +104,21 @@ document.addEventListener("DOMContentLoaded", () => {
         text: lcwRequestUrl,
         width: 256,
         height: 256,
-        correctLevel: QRCode.CorrectLevel.L
+        correctLevel: QRCode.CorrectLevel.L,
       });
     } catch (e) {
       console.warn("QR too long, showing link instead:", e);
-      qrDiv.innerHTML =
-        `<a href="${lcwRequestUrl}" target="_blank" rel="noopener">Open in Wallet</a>`;
+      qrDiv.innerHTML = `<a href="${lcwRequestUrl}" target="_blank" rel="noopener">Open in Wallet</a>`;
     }
 
-    // Show both URL and JSON
-    qrTextPre.textContent = 
-      `Wallet deep link:\n${lcwRequestUrl}\n\nDecoded request JSON:\n${JSON.stringify(chapiRequest, null, 2)}`;
+    // Show both URL and JSON (separately)
+    qrTextPre.textContent = `Wallet deep link:\n${lcwRequestUrl}\n\nDecoded request JSON:`;
+    const qrJsonEl = document.createElement("code");
+    qrJsonEl.className = "language-json";
+    qrJsonEl.textContent = JSON.stringify(chapiRequest, null, 2);
+    qrTextPre.appendChild(document.createElement("br"));
+    qrTextPre.appendChild(qrJsonEl);
+    if (window.hljs) hljs.highlightElement(qrJsonEl);
 
     startPolling();
   });
