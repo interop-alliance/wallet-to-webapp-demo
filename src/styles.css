@@ -6,7 +6,29 @@
 
 /* Tab styles */
 .tabs {
-  margin-bottom: 2rem;
+  margin-block: 2rem;
+}
+
+/* Increase tab font contrast */
+.tabs .tab a {
+  color: #2e7d32 !important;
+  font-weight: 500;
+}
+
+.tabs .tab a:hover {
+  color: #424242 !important;
+}
+
+.tabs .tab a.active {
+  color: #424242 !important;
+}
+
+.tabs .tab a.active {
+  background-color: transparent !important;
+}
+
+.tabs .indicator {
+  background-color: #424242 !important;
 }
 
 /* Tab content spacing */
@@ -31,7 +53,8 @@
 }
 
 /* QR code styles */
-#qr {
+#qr,
+#didQr {
   margin: 20px auto;
   display: flex;
   justify-content: center;
