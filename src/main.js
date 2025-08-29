@@ -1,4 +1,5 @@
 // ======= CONFIG =======
+const APP_URL='https://interop-alliance.github.io/wallet-to-webapp-demo';
 const EXCHANGE_SERVER_URL = "https://verifierplus.org";
 const WALLET_DEEP_LINK = "https://lcw.app/request";
 const CORS_PROXY = "https://corsproxy.io/?";
@@ -37,7 +38,7 @@ const safeParse = (s) => { try { return JSON.parse(s); } catch { return null; } 
 
 // Build CHAPI request object + deep link
 const chapiRequest = {
-  credentialRequestOrigin: EXCHANGE_SERVER_URL,
+  credentialRequestOrigin: APP_URL,
   protocols: { vcapi: exchangeUrl }
 };
 const encodedRequest = encodeURI(JSON.stringify(chapiRequest));
