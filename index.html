@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <title>Wallet-to-WebApp Demo</title>
 
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
   <!-- MaterializeCSS -->
   <link
     href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
@@ -21,6 +23,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
 
   <style>
+    .container {
+      max-width: 800px;
+      margin: 1rem auto;
+    }
     #qr {
       margin: 20px auto;
       display: flex;
@@ -73,12 +79,18 @@
     <pre id="result" class="language-json">No credential yet.</pre>
 
     <div id="actions" class="actions">
-      <a id="copyBtn" class="btn-flat">Copy JSON</a>
-      <a id="downloadBtn" class="btn-flat">Download JSON</a>
+      <a id="copyBtn" class="btn waves-effect waves-light blue lighten-1">
+        <i class="material-icons left">content_copy</i> Copy JSON
+      </a>
+      <a id="downloadBtn" class="btn waves-effect waves-light green lighten-1">
+        <i class="material-icons left">download</i> Download JSON
+      </a>
     </div>
+    
   </div>
 
   <script src="src/main.js"></script>
+  <script src="src/actions.js"></script>
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
   </script>
