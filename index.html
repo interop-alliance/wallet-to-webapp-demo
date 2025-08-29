@@ -22,75 +22,139 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
 
-  <style>
-    .container {
-      max-width: 800px;
-      margin: 1rem auto;
-    }
-    #qr {
-      margin: 20px auto;
-      display: flex;
-      justify-content: center;
-    }
-    pre {
-      background: #f6f8fa;
-      padding: 12px;
-      border-radius: 6px;
-      max-height: 420px;
-      overflow: auto;
-      font-size: 0.9rem;
-    }
-    .spinner {
-      display: none;
-      margin: 20px auto;
-      text-align: center;
-    }
-    .actions {
-      display: none;
-      gap: 8px;
-      margin: 10px 0 0 0;
-    }
-  </style>
+  <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
   <div class="container">
     <h4 class="center-align">This is a demo to test interop between<br /> web applications and credential wallets</h4>
 
-    <div class="row center-align">
-      <a id="requestBtn" class="btn blue">Request a single VC</a>
+    <!-- Tabs -->
+    <div class="row">
+      <div class="col s12">
+        <ul class="tabs tabs-fixed-width">
+          <li class="tab col s3">
+            <a href="#tab-request">Request credential</a>
+          </li>
+          <li class="tab col s3"> 
+            <a href="#tab-did-login">DID Login</a>
+          </li>
+          <li class="tab col s3">
+            <a href="#tab-zcap">Request zCap</a>
+          </li>
+          <li class="tab col s3">
+            <a href="#tab-sign">Sign via Wallet</a>
+          </li>
+        </ul>
+      </div>
     </div>
 
-    <div id="qr"></div>
-    <pre id="qrText">QR code not generated yet, click Request a single VC.</pre>
+    <!-- Tab 1: Request credential (existing content) -->
+    <div id="tab-request">
+      <div class="row center-align">
+        <a id="requestBtn" class="btn green">Request a single VC</a>
+      </div>
 
+      <div id="qr"></div>
+      <pre id="qrText">QR code not generated yet, click Request a single VC.</pre>
 
-    <div id="spinner" class="spinner">
-      <div class="preloader-wrapper big active">
-        <div class="spinner-layer spinner-blue-only">
-          <div class="circle-clipper left"><div class="circle"></div></div>
-          <div class="gap-patch"><div class="circle"></div></div>
-          <div class="circle-clipper right"><div class="circle"></div></div>
+      <div id="spinner" class="spinner">
+        <div class="preloader-wrapper big active">
+          <div class="spinner-layer spinner-blue-only">
+            <div class="circle-clipper left"><div class="circle"></div></div>
+            <div class="gap-patch"><div class="circle"></div></div>
+            <div class="circle-clipper right"><div class="circle"></div></div>
+          </div>
+        </div>
+        <p>Waiting for wallet...</p>
+      </div>
+
+      <h5>Result</h5>
+      <pre id="result" class="language-json">No credential yet.</pre>
+
+      <div id="actions" class="actions">
+        <a id="copyBtn" class="btn waves-effect waves-light green lighten-1">
+          <i class="material-icons left">content_copy</i> Copy JSON
+        </a>
+        <a id="downloadBtn" class="btn waves-effect waves-light green lighten-2">
+          <i class="material-icons left">download</i> Download JSON
+        </a>
+      </div>
+    </div>
+
+    <!-- Tab 2: DID Login -->
+    <div id="tab-did-login">
+      <div class="row center-align">
+        <a id="didLoginBtn" class="btn waves-effect waves-light green">
+          <i class="material-icons left">login</i> DID Login
+        </a>
+      </div>
+      
+      <div class="row">
+        <div class="col s12">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">DID Authentication</span>
+              <p>Authenticate using your Decentralized Identifier (DID) through your wallet.</p>
+              <div id="didLoginResult" class="center-align">
+                <p class="grey-text">Click the button above to initiate DID authentication</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <p>Waiting for wallet...</p>
     </div>
 
-    <h5>Result</h5>
-    <pre id="result" class="language-json">No credential yet.</pre>
+    <!-- Tab 3: Request zCap -->
+    <div id="tab-zcap">
+      <div class="row center-align">
+        <a id="zcapBtn" class="btn waves-effect waves-light orange">
+          <i class="material-icons left">security</i> Request zCap
+        </a>
+      </div>
+      
+      <div class="row">
+        <div class="col s12">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">Zero-Knowledge Capability (zCap)</span>
+              <p>Request a zero-knowledge capability from your wallet for secure authorization.</p>
+              <div id="zcapResult" class="center-align">
+                <p class="grey-text">Click the button above to request zCap</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div id="actions" class="actions">
-      <a id="copyBtn" class="btn waves-effect waves-light blue lighten-1">
-        <i class="material-icons left">content_copy</i> Copy JSON
-      </a>
-      <a id="downloadBtn" class="btn waves-effect waves-light green lighten-1">
-        <i class="material-icons left">download</i> Download JSON
-      </a>
+    <!-- Tab 4: Sign via Wallet -->
+    <div id="tab-sign">
+      <div class="row center-align">
+        <a id="signBtn" class="btn waves-effect waves-light red">
+          <i class="material-icons left">edit</i> Sign Message
+        </a>
+      </div>
+      
+      <div class="row">
+        <div class="col s12">
+          <div class="card">
+            <div class="card-content">
+              <span class="card-title">Message Signing</span>
+              <p>Sign a message using your wallet's private key for authentication and verification.</p>
+              <div id="signResult" class="center-align">
+                <p class="grey-text">Click the button above to sign a message</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     
   </div>
 
   <script src="src/main.js"></script>
   <script src="src/actions.js"></script>
+  <script src="src/tabs.js"></script>
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
   </script>

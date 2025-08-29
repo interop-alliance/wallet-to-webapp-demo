@@ -1,0 +1,53 @@
+/* Main container styles */
+.container {
+  max-width: 1000px;
+  margin: 1rem auto;
+}
+
+/* Tab styles */
+.tabs {
+  margin-bottom: 2rem;
+}
+
+/* Tab content spacing */
+.tabs-content {
+  margin-top: 2rem;
+}
+
+#tab-request h5,
+#tab-did-login h5,
+#tab-zcap h5,
+#tab-sign h5 {
+  margin-top: 2rem;
+}
+
+/* QR code styles */
+#qr {
+  margin: 20px auto;
+  display: flex;
+  justify-content: center;
+}
+
+/* Code block styles */
+pre {
+  background: #f6f8fa;
+  padding: 12px;
+  border-radius: 6px;
+  max-height: 420px;
+  overflow: auto;
+  font-size: 0.9rem;
+}
+
+/* Spinner styles */
+.spinner {
+  display: none;
+  margin: 20px auto;
+  text-align: center;
+}
+
+/* Action buttons styles */
+.actions {
+  display: none;
+  gap: 8px;
+  margin: 10px 0 0 0;
+}
