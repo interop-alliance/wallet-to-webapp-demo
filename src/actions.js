@@ -92,6 +92,21 @@
     if (downloadBtn) downloadBtn.addEventListener("click", () => downloadJSON(getJSON));
   }
 
+  function initZcapActions(opts = {}) {
+    const zcapCopyBtn = document.getElementById("zcapCopyBtn");
+    const zcapDownloadBtn = document.getElementById("zcapDownloadBtn");
+    const getJSON = opts.getJSON; // optional: () => string
+
+    if (zcapCopyBtn) zcapCopyBtn.addEventListener("click", () => copyJSONToClipboard(getJSON));
+    if (zcapDownloadBtn) zcapDownloadBtn.addEventListener("click", () => downloadJSON(getJSON));
+  }
+
+  function showZcapActions(show) {
+    const wrap = document.getElementById("zcapActions");
+    if (!wrap) return;
+    wrap.style.display = show ? "flex" : "none";
+  }
+
   // expose a tiny API to main.js
-  window.Actions = { initActions, setResultJSON, showActions };
+  window.Actions = { initActions, setResultJSON, showActions, initZcapActions, showZcapActions };
 })();

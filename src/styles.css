@@ -54,7 +54,8 @@
 
 /* QR code styles */
 #qr,
-#didQr {
+#didQr,
+#zcapQr {
   margin: 20px auto;
   display: flex;
   justify-content: center;
