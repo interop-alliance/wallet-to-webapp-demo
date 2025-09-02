@@ -2,6 +2,7 @@
   "name": "wallet-to-webapp-demo",
   "version": "1.0.0",
   "main": "index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/interop-alliance/wallet-to-webapp-demo.git"
