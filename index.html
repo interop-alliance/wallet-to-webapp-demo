@@ -1,209 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Wallet-to-WebApp Demo</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Wallet-to-WebApp Demo</title>
 
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
 
-  <!-- MaterializeCSS -->
-  <link
-    href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
-    rel="stylesheet"
-  />
-  <!-- QR Code generator -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- MaterializeCSS -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      rel="stylesheet"
+    />
+    <!-- QR Code generator -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <!-- Highlight.js -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
-  />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <!-- Highlight.js -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
 
-  <link rel="stylesheet" href="src/styles.css">
-</head>
-<body>
-  <div class="container">
-    <h4 class="center-align">This is a demo to test interop between<br /> web applications and credential wallets</h4>
+    <link
+      rel="stylesheet"
+      href="src/styles.css"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <h4 class="center-align">
+        This is a demo to test interop between<br />
+        web applications and credential wallets
+      </h4>
 
-    <!-- Tabs -->
-    <div class="row">
-      <div class="col s12">
-        <ul class="tabs tabs-fixed-width">
-          <li class="tab col s3">
-            <a href="#tab-request">Request credential</a>
-          </li>
-          <li class="tab col s3"> 
-            <a href="#tab-did-login">DID Login</a>
-          </li>
-          <li class="tab col s3">
-            <a href="#tab-zcap">Request zCap</a>
-          </li>
-          <li class="tab col s3">
-            <a href="#tab-sign">Sign/Issue via Wallet</a>
-          </li>
-        </ul>
+      <!-- Tabs -->
+      <div class="row">
+        <div class="col s12">
+          <ul class="tabs tabs-fixed-width">
+            <li class="tab col s3">
+              <a href="#tab-request">Request credential</a>
+            </li>
+            <li class="tab col s3">
+              <a href="#tab-did-login">DID Login</a>
+            </li>
+            <li class="tab col s3">
+              <a href="#tab-zcap">Request zCap</a>
+            </li>
+            <li class="tab col s3">
+              <a href="#tab-sign">Sign/Issue via Wallet</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col s12 tabs-content">
+        <!-- Tab 1: Request credential (existing content) -->
+        <div
+          id="tab-request"
+          class="tab-content active"
+        >
+          <div class="row center-align">
+            <a
+              id="requestBtn"
+              class="btn green"
+              >Request a single VC</a
+            >
+          </div>
+
+          <div id="qr"></div>
+          <pre id="qrText">
+QR code not generated yet, click Request a single VC.</pre
+          >
+
+          <div
+            id="spinner"
+            class="spinner"
+          >
+            <div class="preloader-wrapper big active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <p>Waiting for wallet...</p>
+          </div>
+
+          <h5>Result</h5>
+          <pre
+            id="result"
+            class="language-json"
+          >
+No credential yet.</pre
+          >
+
+          <div
+            id="actions"
+            class="actions"
+          >
+            <a
+              id="copyBtn"
+              class="btn waves-effect waves-light green lighten-1"
+            >
+              <i class="material-icons left">content_copy</i> Copy JSON
+            </a>
+            <a
+              id="downloadBtn"
+              class="btn waves-effect waves-light green lighten-2"
+            >
+              <i class="material-icons left">download</i> Download JSON
+            </a>
+          </div>
+        </div>
+
+        <!-- Tab 2: DID Login -->
+        <div
+          id="tab-did-login"
+          class="tab-content"
+        >
+          <div class="row center-align">
+            <a
+              id="didLoginBtn"
+              class="btn waves-effect waves-light green"
+            >
+              <i class="material-icons left">login</i> Login with DID
+            </a>
+          </div>
+
+          <div id="didQr"></div>
+          <pre id="didQrText">
+QR code not generated yet, click Login with DID.</pre
+          >
+
+          <div
+            id="didSpinner"
+            class="spinner"
+          >
+            <div class="preloader-wrapper big active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <p>Waiting for wallet...</p>
+          </div>
+
+          <h5>DID Authentication Result</h5>
+          <pre
+            id="didResult"
+            class="language-json"
+          >
+No authentication result yet.</pre
+          >
+        </div>
+
+        <!-- Tab 3: Request zCap -->
+        <div
+          id="tab-zcap"
+          class="tab-content"
+        >
+          <div class="row">
+            <div class="col s6">
+              <div class="input-field">
+                <input
+                  id="controllerDid"
+                  type="text"
+                  value="did:example:12345"
+                />
+                <label for="controllerDid">Controller DID</label>
+              </div>
+            </div>
+            <div class="col s6">
+              <div class="input-field">
+                <input
+                  id="targetUrl"
+                  type="text"
+                  value="https://example.com/api/endpoint"
+                />
+                <label for="targetUrl">Target URL</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="row center-align">
+            <a
+              id="zcapBtn"
+              class="btn waves-effect waves-light green"
+            >
+              <i class="material-icons left">security</i> Request zCap
+            </a>
+          </div>
+
+          <div id="zcapQr"></div>
+          <pre id="zcapQrText">
+QR code not generated yet, click Request zCap.</pre
+          >
+
+          <div
+            id="zcapSpinner"
+            class="spinner"
+          >
+            <div class="preloader-wrapper big active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <p>Waiting for wallet...</p>
+          </div>
+
+          <h5>zCap Result</h5>
+          <pre
+            id="zcapResult"
+            class="language-json"
+          >
+No zCap result yet.</pre
+          >
+
+          <div
+            id="zcapActions"
+            class="actions"
+          >
+            <a
+              id="zcapCopyBtn"
+              class="btn waves-effect waves-light green lighten-1"
+            >
+              <i class="material-icons left">content_copy</i> Copy JSON
+            </a>
+            <a
+              id="zcapDownloadBtn"
+              class="btn waves-effect waves-light green lighten-2"
+            >
+              <i class="material-icons left">download</i> Download JSON
+            </a>
+          </div>
+        </div>
+
+        <!-- Tab 4: Sign/Issue via Wallet -->
+        <div
+          id="tab-sign"
+          class="tab-content"
+        >
+          <div class="row center-align">
+            <a
+              id="signBtn"
+              class="btn waves-effect waves-light green"
+            >
+              <i class="material-icons left">edit</i> Sign/Issue via Wallet
+            </a>
+          </div>
+
+          <div id="signQr"></div>
+
+          <pre id="signQrText">
+QR code not generated yet, click Sign/Issue via Wallet.</pre
+          >
+
+          <div
+            id="signSpinner"
+            class="spinner"
+          >
+            <div class="preloader-wrapper big active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <p>Waiting for wallet...</p>
+          </div>
+
+          <h5>Sign/Issue Result</h5>
+          <pre
+            id="signResult"
+            class="language-json"
+          >
+No sign/issue result yet.</pre
+          >
+
+          <div
+            id="signActions"
+            class="actions"
+          >
+            <a
+              id="signCopyBtn"
+              class="btn waves-effect waves-light green lighten-1"
+            >
+              <i class="material-icons left">content_copy</i> Copy JSON
+            </a>
+            <a
+              id="signDownloadBtn"
+              class="btn waves-effect waves-light green lighten-2"
+            >
+              <i class="material-icons left">download</i> Download JSON
+            </a>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="col s12 tabs-content">
-      <!-- Tab 1: Request credential (existing content) -->
-      <div id="tab-request" class="tab-content active">
-        <div class="row center-align">
-          <a id="requestBtn" class="btn green">Request a single VC</a>
-        </div>
-
-        <div id="qr"></div>
-        <pre id="qrText">QR code not generated yet, click Request a single VC.</pre>
-
-        <div id="spinner" class="spinner">
-          <div class="preloader-wrapper big active">
-            <div class="spinner-layer spinner-blue-only">
-              <div class="circle-clipper left"><div class="circle"></div></div>
-              <div class="gap-patch"><div class="circle"></div></div>
-              <div class="circle-clipper right"><div class="circle"></div></div>
-            </div>
-          </div>
-          <p>Waiting for wallet...</p>
-        </div>
-
-        <h5>Result</h5>
-        <pre id="result" class="language-json">No credential yet.</pre>
-
-        <div id="actions" class="actions">
-          <a id="copyBtn" class="btn waves-effect waves-light green lighten-1">
-            <i class="material-icons left">content_copy</i> Copy JSON
-          </a>
-          <a id="downloadBtn" class="btn waves-effect waves-light green lighten-2">
-            <i class="material-icons left">download</i> Download JSON
-          </a>
-        </div>
-      </div>
-
-      <!-- Tab 2: DID Login -->
-      <div id="tab-did-login" class="tab-content">
-        <div class="row center-align">
-          <a id="didLoginBtn" class="btn waves-effect waves-light green">
-            <i class="material-icons left">login</i> Login with DID
-          </a>
-        </div>
-
-        <div id="didQr"></div>
-        <pre id="didQrText">QR code not generated yet, click Login with DID.</pre>
-
-        <div id="didSpinner" class="spinner">
-          <div class="preloader-wrapper big active">
-            <div class="spinner-layer spinner-blue-only">
-              <div class="circle-clipper left"><div class="circle"></div></div>
-              <div class="gap-patch"><div class="circle"></div></div>
-              <div class="circle-clipper right"><div class="circle"></div></div>
-            </div>
-          </div>
-          <p>Waiting for wallet...</p>
-        </div>
-
-        <h5>DID Authentication Result</h5>
-        <pre id="didResult" class="language-json">No authentication result yet.</pre>
-      </div>
-
-      <!-- Tab 3: Request zCap -->
-      <div id="tab-zcap" class="tab-content">
-        <div class="row">
-          <div class="col s6">
-            <div class="input-field">
-              <input id="controllerDid" type="text" value="did:example:12345">
-              <label for="controllerDid">Controller DID</label>
-            </div>
-          </div>
-          <div class="col s6">
-            <div class="input-field">
-              <input id="targetUrl" type="text" value="https://example.com/api/endpoint">
-              <label for="targetUrl">Target URL</label>
-            </div>
-          </div>
-        </div>
-        
-        <div class="row center-align">
-          <a id="zcapBtn" class="btn waves-effect waves-light green">
-            <i class="material-icons left">security</i> Request zCap
-          </a>
-        </div>
-
-        <div id="zcapQr"></div>
-        <pre id="zcapQrText">QR code not generated yet, click Request zCap.</pre>
-
-        <div id="zcapSpinner" class="spinner">
-          <div class="preloader-wrapper big active">
-            <div class="spinner-layer spinner-blue-only">
-              <div class="circle-clipper left"><div class="circle"></div></div>
-              <div class="gap-patch"><div class="circle"></div></div>
-              <div class="circle-clipper right"><div class="circle"></div></div>
-            </div>
-          </div>
-          <p>Waiting for wallet...</p>
-        </div>
-
-        <h5>zCap Result</h5>
-        <pre id="zcapResult" class="language-json">No zCap result yet.</pre>
-
-        <div id="zcapActions" class="actions">
-          <a id="zcapCopyBtn" class="btn waves-effect waves-light green lighten-1">
-            <i class="material-icons left">content_copy</i> Copy JSON
-          </a>
-          <a id="zcapDownloadBtn" class="btn waves-effect waves-light green lighten-2">
-            <i class="material-icons left">download</i> Download JSON
-          </a>
-        </div>
-      </div>
-
-      <!-- Tab 4: Sign/Issue via Wallet -->
-      <div id="tab-sign" class="tab-content">
-        <div class="row center-align">
-          <a id="signBtn" class="btn waves-effect waves-light green">
-            <i class="material-icons left">edit</i> Sign/Issue via Wallet
-          </a>
-        </div>
-        
-        <div id="signQr"></div>
-
-        <pre id="signQrText">QR code not generated yet, click Sign/Issue via Wallet.</pre>
-
-        <div id="signSpinner" class="spinner">
-          <div class="preloader-wrapper big active">
-            <div class="spinner-layer spinner-blue-only">
-              <div class="circle-clipper left"><div class="circle"></div></div>
-              <div class="gap-patch"><div class="circle"></div></div>
-              <div class="circle-clipper right"><div class="circle"></div></div>
-            </div>
-          </div>
-          <p>Waiting for wallet...</p>
-        </div>
-
-        <h5>Sign/Issue Result</h5>
-        <pre id="signResult" class="language-json">No sign/issue result yet.</pre>
-
-        <div id="signActions" class="actions">
-          <a id="signCopyBtn" class="btn waves-effect waves-light green lighten-1">
-            <i class="material-icons left">content_copy</i> Copy JSON
-          </a>
-          <a id="signDownloadBtn" class="btn waves-effect waves-light green lighten-2">
-            <i class="material-icons left">download</i> Download JSON
-          </a>
-        </div>
-      </div>
-    </div>
-    
-  </div>
-
-  <script src="src/main.js"></script>
-  <script src="src/actions.js"></script>
-  <script src="src/zcap.js"></script>
-  <script src="src/sign-request.js"></script>
-  <script src="src/tabs.js"></script>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
-  </script>
-</body>
+    <script src="src/utilities/actions.js"></script>
+    <script
+      type="module"
+      src="src/main.js"
+    ></script>
+    <script
+      type="module"
+      src="src/tabs/zcap.js"
+    ></script>
+    <script
+      type="module"
+      src="src/tabs/sign-request.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="src/tabs/index.js"></script>
+  </body>
 </html>
