@@ -1,3 +1,7 @@
+import { APP_URL, WALLET_DEEP_LINK, exchangeUrl } from '../../app.config.js';
+import { renderQrAndJson } from '../utilities/helpers.js';
+import { startPolling } from '../utilities/polling.js';
+
 function buildZcapRequest(controllerDid, targetUrl) {
   return {
     credentialRequestOrigin: APP_URL,
@@ -53,76 +57,24 @@ function initZcapRequest() {
       const encodedZcapRequest = encodeURI(JSON.stringify(zcapRequest));
       const lcwZcapRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedZcapRequest}`;
 
-      zcapQrDiv.innerHTML = '';
-      try {
-        new QRCode(zcapQrDiv, {
-          text: lcwZcapRequestUrl,
-          width: 256,
-          height: 256,
-          correctLevel: QRCode.CorrectLevel.L,
-        });
-      } catch (e) {
-        console.warn('QR too long, showing link instead:', e);
-        zcapQrDiv.innerHTML = `<a href="${lcwZcapRequestUrl}" target="_blank" rel="noopener">Open in Wallet</a>`;
-      }
+      renderQrAndJson({
+        targetDiv: zcapQrDiv,
+        targetPre: zcapQrTextPre,
+        requestUrl: lcwZcapRequestUrl,
+        json: zcapRequest,
+        includeLinkFallback: true,
+      });
 
-      zcapQrTextPre.textContent = `Wallet deep link:\n${lcwZcapRequestUrl}\n\nDecoded request JSON:`;
-      const code = document.createElement('code');
-      code.className = 'language-json';
-      code.textContent = JSON.stringify(zcapRequest, null, 2);
-      zcapQrTextPre.appendChild(document.createElement('br'));
-      zcapQrTextPre.appendChild(code);
-      highlight(code);
-
-      startZcapPolling();
+      startPolling({
+        spinnerId: 'zcapSpinner',
+        resultId: 'zcapResult',
+        showActions: () => Actions.showZcapActions(true),
+        hideActions: () => Actions.showZcapActions(false),
+        successToast: 'zCap request successful!',
+        timeoutToast: 'zCap request timed out',
+      });
     });
   }
 }
 
-function startZcapPolling() {
-  if (pollInterval) return;
-  const zcapSpinner = document.getElementById('zcapSpinner');
-  const zcapResult = document.getElementById('zcapResult');
-
-  show(zcapSpinner);
-
-  pollInterval = setInterval(async () => {
-    await pollOnce(obj => {
-      clearInterval(pollInterval);
-      pollInterval = null;
-      hide(zcapSpinner);
-
-      window.latestPayload = obj;
-
-      if (zcapResult) {
-        zcapResult.textContent = JSON.stringify(obj, null, 2);
-        highlight(zcapResult);
-      }
-
-      Actions.showZcapActions(true);
-
-      if (window.M?.toast) {
-        M.toast({ html: 'zCap request successful!' });
-      }
-    });
-  }, 3000);
-
-  setTimeout(() => {
-    if (!pollInterval) return;
-    clearInterval(pollInterval);
-    pollInterval = null;
-    hide(zcapSpinner);
-
-    if (zcapResult) {
-      zcapResult.textContent =
-        'Timed out waiting for wallet. Please rescan or refresh.';
-      highlight(zcapResult);
-    }
-
-    Actions.showZcapActions(false);
-
-    if (window.M?.toast) {
-      M.toast({ html: 'zCap request timed out' });
-    }
-  }, 120000);
-}
+document.addEventListener('DOMContentLoaded', initZcapRequest);

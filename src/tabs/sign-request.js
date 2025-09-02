@@ -1,3 +1,7 @@
+import { WALLET_DEEP_LINK, exchangeUrl } from '../../app.config.js';
+import { renderQrAndJson } from '../utilities/helpers.js';
+import { startPolling } from '../utilities/polling.js';
+
 function buildSignRequest(controllerDid, exchangeUrl) {
   return {
     issueRequest: {
@@ -51,73 +55,23 @@ function initSignRequest() {
       const encodedSignRequest = encodeURI(JSON.stringify(signRequest));
       const lcwSignRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedSignRequest}`;
 
-      if (signQrDiv) signQrDiv.innerHTML = '';
-      if (window.QRCode && signQrDiv) {
-        new QRCode(signQrDiv, {
-          text: lcwSignRequestUrl,
-          width: 256,
-          height: 256,
-          correctLevel: window.QRCode.CorrectLevel?.L || 0
-        });
-      } else {
-        console.warn('QRCode library not available');
-      }
+      renderQrAndJson({
+        targetDiv: signQrDiv,
+        targetPre: signQrTextPre,
+        requestUrl: lcwSignRequestUrl,
+        json: signRequest,
+        includeLinkFallback: false,
+      });
 
-      if (signQrTextPre) {
-        signQrTextPre.textContent = `Wallet deep link:\n${lcwSignRequestUrl}\n\nDecoded request JSON:`;
-        const code = document.createElement('code');
-        code.className = 'language-json';
-        code.textContent = JSON.stringify(signRequest, null, 2);
-        signQrTextPre.appendChild(document.createElement('br'));
-        signQrTextPre.appendChild(code);
-        highlight(code);
-      }
-
-      startSignPolling();
+      startPolling({
+        spinnerId: 'signSpinner',
+        resultId: 'signResult',
+        showActions: () => Actions.showSignRequestActions(true),
+        hideActions: () => Actions.showSignRequestActions(false),
+        successToast: 'Sign request successful!',
+        timeoutToast: 'Polling timed out',
+      });
     });
   }
 }
-
-function startSignPolling() {
-  const signSpinner = document.getElementById('signSpinner');
-  const signResult = document.getElementById('signResult');
-
-  show(signSpinner);
-
-  pollInterval = setInterval(async () => {
-    await pollOnce(obj => {
-      clearInterval(pollInterval);
-      pollInterval = null;
-      hide(signSpinner);
-
-      window.latestPayload = obj;
-      if (signResult) {
-        signResult.textContent = JSON.stringify(obj, null, 2);
-        highlight(signResult);
-      }
-
-      Actions.showSignRequestActions(true);
-
-      if (window.M?.toast) {
-        M.toast({ html: 'Sign request successful!' });
-      }
-    });
-  }, 3000);
-
-  // 120 seconds timeout
-  setTimeout(() => {
-    if (!pollInterval) return;
-    clearInterval(pollInterval);
-    pollInterval = null;
-    hide(signSpinner);
-
-    if (signResult) {
-      signResult.textContent =
-        'Timed out waiting for wallet. Please rescan or refresh.';
-      highlight(signResult);
-    }
-
-    Actions.showActions(false);
-    window.M?.toast?.({ html: 'Polling timed out' });
-  }, 120000);
-}
+document.addEventListener('DOMContentLoaded', initSignRequest);
