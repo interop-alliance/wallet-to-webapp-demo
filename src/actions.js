@@ -107,6 +107,21 @@
     wrap.style.display = show ? "flex" : "none";
   }
 
+  function initSignRequestActions(opts = {}) {
+    const signCopyBtn = document.getElementById("signCopyBtn");
+    const signDownloadBtn = document.getElementById("signDownloadBtn");
+    const getJSON = opts.getJSON; // optional: () => string
+
+    if (signCopyBtn) signCopyBtn.addEventListener("click", () => copyJSONToClipboard(getJSON));
+    if (signDownloadBtn) signDownloadBtn.addEventListener("click", () => downloadJSON(getJSON));
+  }
+
+  function showSignRequestActions(show) {
+    const wrap = document.getElementById("signActions");
+    if (!wrap) return;
+    wrap.style.display = show ? "flex" : "none";
+  }
+
   // expose a tiny API to main.js
-  window.Actions = { initActions, setResultJSON, showActions, initZcapActions, showZcapActions };
+  window.Actions = { initActions, setResultJSON, showActions, initZcapActions, showZcapActions, initSignRequestActions, showSignRequestActions };
 })();
