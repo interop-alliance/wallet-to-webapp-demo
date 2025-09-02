@@ -117,6 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   Actions.showZcapActions(false);
 
+  Actions.initSignRequestActions({
+    getJSON: () => (window.latestPayload ? JSON.stringify(window.latestPayload, null, 2) : "")
+  });
+  Actions.showSignRequestActions(false);
+
   btn.addEventListener("click", () => {
     qrDiv.innerHTML = "";
     try {
@@ -144,6 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   initDidAuthentication();
   initZcapRequest();
+  initSignRequest();
 });
 
 function initDidAuthentication() {

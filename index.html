@@ -42,7 +42,7 @@
             <a href="#tab-zcap">Request zCap</a>
           </li>
           <li class="tab col s3">
-            <a href="#tab-sign">Sign via Wallet</a>
+            <a href="#tab-sign">Sign/Issue via Wallet</a>
           </li>
         </ul>
       </div>
@@ -158,24 +158,39 @@
         </div>
       </div>
 
-      <!-- Tab 4: Sign via Wallet -->
+      <!-- Tab 4: Sign/Issue via Wallet -->
       <div id="tab-sign" class="tab-content">
         <div class="row center-align">
           <a id="signBtn" class="btn waves-effect waves-light green">
-            <i class="material-icons left">edit</i> Sign Message
+            <i class="material-icons left">edit</i> Sign/Issue via Wallet
           </a>
         </div>
         
-        <div class="row">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">Message Signing</span>
-              <p>Sign a message using your wallet's private key for authentication and verification.</p>
-              <div id="signResult" class="center-align">
-                <p class="grey-text">Click the button above to sign a message</p>
-              </div>
+        <div id="signQr"></div>
+
+        <pre id="signQrText">QR code not generated yet, click Sign/Issue via Wallet.</pre>
+
+        <div id="signSpinner" class="spinner">
+          <div class="preloader-wrapper big active">
+            <div class="spinner-layer spinner-blue-only">
+              <div class="circle-clipper left"><div class="circle"></div></div>
+              <div class="gap-patch"><div class="circle"></div></div>
+              <div class="circle-clipper right"><div class="circle"></div></div>
             </div>
           </div>
+          <p>Waiting for wallet...</p>
+        </div>
+
+        <h5>Sign/Issue Result</h5>
+        <pre id="signResult" class="language-json">No sign/issue result yet.</pre>
+
+        <div id="signActions" class="actions">
+          <a id="signCopyBtn" class="btn waves-effect waves-light green lighten-1">
+            <i class="material-icons left">content_copy</i> Copy JSON
+          </a>
+          <a id="signDownloadBtn" class="btn waves-effect waves-light green lighten-2">
+            <i class="material-icons left">download</i> Download JSON
+          </a>
         </div>
       </div>
     </div>
@@ -185,6 +200,7 @@
   <script src="src/main.js"></script>
   <script src="src/actions.js"></script>
   <script src="src/zcap.js"></script>
+  <script src="src/sign-request.js"></script>
   <script src="src/tabs.js"></script>
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js">
