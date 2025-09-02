@@ -5,24 +5,19 @@ const WALLET_DEEP_LINK = "https://lcw.app/request";
 const CORS_PROXY = "https://corsproxy.io/?";
 // ======================
 
-// Generate a unique exchange URL
 const randomPageId = crypto?.randomUUID?.() || String(Math.random()).slice(2);
 const exchangeUrl = `${EXCHANGE_SERVER_URL}/api/exchanges/${randomPageId}`;
 
-// Dummy DID to associate the app instance
 const demoAppDid = `did:example:${randomPageId}`;
 
-// Runtime state
 let pollInterval = null;
-window.latestPayload = null; // exposed so actions.js (via getJSON) can access it
+window.latestPayload = null;
 
-// Small helpers
 const show = (el, css = "block") => el && (el.style.display = css);
 const hide = (el) => el && (el.style.display = "none");
 const highlight = (el) => (window.hljs && el ? hljs.highlightElement(el) : null);
 const safeParse = (s) => { try { return JSON.parse(s); } catch { return null; } };
 
-// Initialize the exchange session (POST appInstanceDid)
 (async () => {
   try {
     await fetch(CORS_PROXY + exchangeUrl, {
@@ -36,15 +31,14 @@ const safeParse = (s) => { try { return JSON.parse(s); } catch { return null; } 
   }
 })();
 
-// Build CHAPI request object + deep link
 const chapiRequest = {
   credentialRequestOrigin: APP_URL,
   protocols: { vcapi: exchangeUrl }
 };
+
 const encodedRequest = encodeURI(JSON.stringify(chapiRequest));
 const lcwRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedRequest}`;
 
-// Build DID authentication request object
 const didAuthRequest = {
   "credentialRequestOrigin": APP_URL,
   "verifiablePresentationRequest": {
@@ -56,15 +50,12 @@ const didAuthRequest = {
       "type": "DIDAuthentication",
       "acceptedMethods": [{"method": "key"}]
     }],
-    // hardcode the challenge for now, we'll generate and verify it in another PR
     "challenge": "99612b24-63d9-11ea-b99f-4f66f3e4f81a",
-    "domain": APP_URL  // yes, the domain appears twice, but this is for different layers
+    "domain": APP_URL
   }
 };
 const encodedDidAuthRequest = encodeURI(JSON.stringify(didAuthRequest));
 const lcwDidAuthRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedDidAuthRequest}`;
-
-// Polling once
 async function pollOnce(onFetch) {
   try {
     const res = await fetch(CORS_PROXY + exchangeUrl);
@@ -81,7 +72,6 @@ async function pollOnce(onFetch) {
   }
 }
 
-// Start polling loop until a payload arrives (or timeout)
 function startPolling() {
   if (pollInterval) return;
   const spinner = document.getElementById("spinner");
@@ -98,8 +88,6 @@ function startPolling() {
       Actions.showActions(true);  // reveal Copy / Download
     });
   }, 3000);
-
-  // Stop after 2 minutes
   setTimeout(() => {
     if (!pollInterval) return;
     clearInterval(pollInterval);
@@ -114,20 +102,22 @@ function startPolling() {
   }, 120000);
 }
 
-// On load: wire UI and kick off actions
 document.addEventListener("DOMContentLoaded", () => {
   const btn = document.getElementById("requestBtn");
   const qrDiv = document.getElementById("qr");
   const qrTextPre = document.getElementById("qrText");
 
-  // Prepare actions (copy/download) with a getter for the freshest JSON
   Actions.initActions({
     getJSON: () => (window.latestPayload ? JSON.stringify(window.latestPayload, null, 2) : "")
   });
-  Actions.showActions(false); // hidden until we get a payload
+  Actions.showActions(false);
+
+  Actions.initZcapActions({
+    getJSON: () => (window.latestPayload ? JSON.stringify(window.latestPayload, null, 2) : "")
+  });
+  Actions.showZcapActions(false);
 
   btn.addEventListener("click", () => {
-    // Render QR or fallback link
     qrDiv.innerHTML = "";
     try {
       new QRCode(qrDiv, {
@@ -141,7 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
       qrDiv.innerHTML = `<a href="${lcwRequestUrl}" target="_blank" rel="noopener">Open in Wallet</a>`;
     }
 
-    // Show URL and the decoded request JSON (highlighted)
     qrTextPre.textContent = `Wallet deep link:\n${lcwRequestUrl}\n\nDecoded request JSON:`;
     const code = document.createElement("code");
     code.className = "language-json";
@@ -150,15 +139,13 @@ document.addEventListener("DOMContentLoaded", () => {
     qrTextPre.appendChild(code);
     highlight(code);
 
-    // Begin polling for wallet response
     startPolling();
   });
 
-  // Initialize DID authentication functionality
   initDidAuthentication();
+  initZcapRequest();
 });
 
-// Initialize DID authentication functionality
 function initDidAuthentication() {
   const didLoginBtn = document.getElementById("didLoginBtn");
   const didQrDiv = document.getElementById("didQr");
@@ -168,7 +155,6 @@ function initDidAuthentication() {
 
   if (didLoginBtn) {
     didLoginBtn.addEventListener("click", () => {
-      // Render QR or fallback link for DID auth
       didQrDiv.innerHTML = "";
       try {
         new QRCode(didQrDiv, {
@@ -182,7 +168,6 @@ function initDidAuthentication() {
         didQrDiv.innerHTML = `<a href="${lcwDidAuthRequestUrl}" target="_blank" rel="noopener">Open in Wallet</a>`;
       }
 
-      // Show URL and the decoded request JSON (highlighted)
       didQrTextPre.textContent = `Wallet deep link:\n${lcwDidAuthRequestUrl}\n\nDecoded request JSON:`;
       const code = document.createElement("code");
       code.className = "language-json";
@@ -191,13 +176,11 @@ function initDidAuthentication() {
       didQrTextPre.appendChild(code);
       highlight(code);
 
-      // Begin polling for DID auth response
       startDidAuthPolling();
     });
   }
 }
 
-// Start polling loop for DID authentication
 function startDidAuthPolling() {
   if (pollInterval) return;
   const didSpinner = document.getElementById("didSpinner");
@@ -213,20 +196,17 @@ function startDidAuthPolling() {
 
       window.latestPayload = obj;
       
-      // Display DID authentication result
       if (didResult) {
         didResult.textContent = JSON.stringify(obj, null, 2);
         highlight(didResult);
       }
       
-      // Show success message
       if (window.M?.toast) {
         M.toast({ html: "DID authentication successful!" });
       }
     });
   }, 3000);
 
-  // Stop after 2 minutes
   setTimeout(() => {
     if (!pollInterval) return;
     clearInterval(pollInterval);
