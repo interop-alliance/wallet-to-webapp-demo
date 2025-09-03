@@ -1,5 +1,9 @@
-import { WALLET_DEEP_LINK, exchangeUrl } from '../../app.config.js';
-import { renderQrAndJson } from '../utilities/helpers.js';
+import { WALLET_DEEP_LINK } from '../../app.config.js';
+import {
+  renderQrAndJson,
+  generateRandomPageId,
+  createExchangeUrl,
+} from '../utilities/helpers.js';
 import { startPolling } from '../utilities/polling.js';
 
 function buildSignRequest(controllerDid, exchangeUrl) {
@@ -51,6 +55,10 @@ function initSignRequest() {
 
   if (signBtn) {
     signBtn.addEventListener('click', () => {
+      // Generate fresh randomPageId for this request
+      const pageId = generateRandomPageId();
+      const exchangeUrl = createExchangeUrl(pageId);
+
       const signRequest = buildSignRequest(controllerDid, exchangeUrl);
       const encodedSignRequest = encodeURI(JSON.stringify(signRequest));
       const lcwSignRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedSignRequest}`;
@@ -70,6 +78,7 @@ function initSignRequest() {
         hideActions: () => Actions.showSignRequestActions(false),
         successToast: 'Sign request successful!',
         timeoutToast: 'Polling timed out',
+        exchangeUrl: exchangeUrl,
       });
     });
   }
