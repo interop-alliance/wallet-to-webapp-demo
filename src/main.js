@@ -1,55 +1,33 @@
-import {
-  APP_URL,
-  WALLET_DEEP_LINK,
-  CORS_PROXY,
-  exchangeUrl,
-  demoAppDid,
-} from '../app.config.js';
+import { APP_URL, WALLET_DEEP_LINK, CORS_PROXY } from '../app.config.js';
 
 import { startPolling } from './utilities/polling.js';
-import { renderQrAndJson } from './utilities/helpers.js';
+import {
+  renderQrAndJson,
+  generateRandomPageId,
+  createExchangeUrl,
+  createDemoAppDid,
+} from './utilities/helpers.js';
 
+// Initialize exchange on page load with initial randomPageId
 (async () => {
   try {
-    await fetch(CORS_PROXY + exchangeUrl, {
+    const initialPageId = generateRandomPageId();
+    const initialExchangeUrl = createExchangeUrl(initialPageId);
+    const initialDemoAppDid = createDemoAppDid(initialPageId);
+
+    await fetch(CORS_PROXY + initialExchangeUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ appInstanceDid: demoAppDid }),
+      body: JSON.stringify({ appInstanceDid: initialDemoAppDid }),
     });
-    console.log('Exchange initialized:', exchangeUrl);
+    console.log('Exchange initialized:', initialExchangeUrl);
   } catch (e) {
     console.warn('Exchange init failed (continuing anyway):', e);
   }
 })();
 
-const chapiRequest = {
-  credentialRequestOrigin: APP_URL,
-  protocols: { vcapi: exchangeUrl },
-};
-
-const encodedRequest = encodeURI(JSON.stringify(chapiRequest));
-const lcwRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedRequest}`;
-
-const didAuthRequest = {
-  credentialRequestOrigin: APP_URL,
-  verifiablePresentationRequest: {
-    interact: {
-      type: 'UnmediatedHttpPresentationService2021',
-      serviceEndpoint: exchangeUrl,
-    },
-    query: [
-      {
-        type: 'DIDAuthentication',
-        acceptedMethods: [{ method: 'key' }],
-      },
-    ],
-    challenge: '99612b24-63d9-11ea-b99f-4f66f3e4f81a',
-    domain: APP_URL,
-  },
-};
-const encodedDidAuthRequest = encodeURI(JSON.stringify(didAuthRequest));
-const lcwDidAuthRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedDidAuthRequest}`;
-
+// These will be created fresh on each button click
+let currentExchangeUrl = null;
 function startVcPolling() {
   startPolling({
     spinnerId: 'spinner',
@@ -58,6 +36,7 @@ function startVcPolling() {
     hideActions: () => Actions.showActions(false),
     timeoutToast: 'Polling timed out',
     onSuccess: obj => Actions.setResultJSON(obj),
+    exchangeUrl: currentExchangeUrl,
   });
 }
 
@@ -86,6 +65,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (btn) {
     btn.addEventListener('click', () => {
+      // Generate fresh randomPageId for this request
+      const pageId = generateRandomPageId();
+      currentExchangeUrl = createExchangeUrl(pageId);
+
+      // Create fresh request with new exchange URL
+      const chapiRequest = {
+        credentialRequestOrigin: APP_URL,
+        protocols: { vcapi: currentExchangeUrl },
+      };
+
+      const encodedRequest = encodeURI(JSON.stringify(chapiRequest));
+      const lcwRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedRequest}`;
+
       renderQrAndJson({
         targetDiv: qrDiv,
         targetPre: qrTextPre,
@@ -107,6 +99,32 @@ function initDidAuthentication() {
 
   if (didLoginBtn) {
     didLoginBtn.addEventListener('click', () => {
+      // Generate fresh randomPageId for this request
+      const pageId = generateRandomPageId();
+      currentExchangeUrl = createExchangeUrl(pageId);
+
+      // Create fresh DID auth request with new exchange URL
+      const didAuthRequest = {
+        credentialRequestOrigin: APP_URL,
+        verifiablePresentationRequest: {
+          interact: {
+            type: 'UnmediatedHttpPresentationService2021',
+            serviceEndpoint: currentExchangeUrl,
+          },
+          query: [
+            {
+              type: 'DIDAuthentication',
+              acceptedMethods: [{ method: 'key' }],
+            },
+          ],
+          challenge: '99612b24-63d9-11ea-b99f-4f66f3e4f81a',
+          domain: APP_URL,
+        },
+      };
+
+      const encodedDidAuthRequest = encodeURI(JSON.stringify(didAuthRequest));
+      const lcwDidAuthRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedDidAuthRequest}`;
+
       renderQrAndJson({
         targetDiv: didQrDiv,
         targetPre: didQrTextPre,
@@ -125,5 +143,6 @@ function startDidAuthPolling() {
     resultId: 'didResult',
     successToast: 'DID authentication successful!',
     timeoutToast: 'DID authentication timed out',
+    exchangeUrl: currentExchangeUrl,
   });
 }
