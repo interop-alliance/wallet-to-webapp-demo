@@ -1,8 +1,12 @@
-import { APP_URL, WALLET_DEEP_LINK, exchangeUrl } from '../../app.config.js';
-import { renderQrAndJson } from '../utilities/helpers.js';
+import { APP_URL, WALLET_DEEP_LINK } from '../../app.config.js';
+import {
+  renderQrAndJson,
+  generateRandomPageId,
+  createExchangeUrl,
+} from '../utilities/helpers.js';
 import { startPolling } from '../utilities/polling.js';
 
-function buildZcapRequest(controllerDid, targetUrl) {
+function buildZcapRequest(controllerDid, targetUrl, exchangeUrl) {
   return {
     credentialRequestOrigin: APP_URL,
     verifiablePresentationRequest: {
@@ -49,11 +53,19 @@ function initZcapRequest() {
 
   if (zcapBtn) {
     zcapBtn.addEventListener('click', () => {
+      // Generate fresh randomPageId for this request
+      const pageId = generateRandomPageId();
+      const exchangeUrl = createExchangeUrl(pageId);
+
       const controllerDid = controllerDidInput.value || 'did:example:12345';
       const targetUrl =
         targetUrlInput.value || 'https://example.com/api/endpoint';
 
-      const zcapRequest = buildZcapRequest(controllerDid, targetUrl);
+      const zcapRequest = buildZcapRequest(
+        controllerDid,
+        targetUrl,
+        exchangeUrl
+      );
       const encodedZcapRequest = encodeURI(JSON.stringify(zcapRequest));
       const lcwZcapRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedZcapRequest}`;
 
@@ -72,6 +84,7 @@ function initZcapRequest() {
         hideActions: () => Actions.showZcapActions(false),
         successToast: 'zCap request successful!',
         timeoutToast: 'zCap request timed out',
+        exchangeUrl: exchangeUrl,
       });
     });
   }

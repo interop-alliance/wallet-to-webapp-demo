@@ -1,11 +1,11 @@
-import { CORS_PROXY, exchangeUrl } from '../../app.config.js';
+import { CORS_PROXY } from '../../app.config.js';
 
 import { hide, show, safeParse, highlight } from './helpers.js';
 
 let pollInterval = null;
 export let latestPayload = null;
 
-async function pollOnce(onFetch) {
+async function pollOnce(exchangeUrl, onFetch) {
   try {
     const res = await fetch(CORS_PROXY + exchangeUrl);
     if (!res.ok) return;
@@ -32,6 +32,7 @@ export function startPolling({
   hideActions,
   successToast,
   timeoutToast,
+  exchangeUrl,
 }) {
   if (pollInterval) clearInterval(pollInterval);
 
@@ -42,7 +43,7 @@ export function startPolling({
   show(spinnerEl);
 
   pollInterval = setInterval(async () => {
-    await pollOnce(obj => {
+    await pollOnce(exchangeUrl, obj => {
       clearInterval(pollInterval);
       pollInterval = null;
       hide(spinnerEl);

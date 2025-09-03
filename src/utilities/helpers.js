@@ -1,3 +1,5 @@
+import { EXCHANGE_SERVER_URL } from '../../app.config.js';
+
 export const show = (el, css = 'block') => el && (el.style.display = css);
 export const hide = el => el && (el.style.display = 'none');
 export const safeParse = s => {
@@ -50,3 +52,20 @@ export function renderQrAndJson({
   targetPre.appendChild(code);
   highlight(code);
 }
+
+export const generateRandomPageId = () => {
+  const randomPageId = crypto?.randomUUID?.() || String(Math.random()).slice(2);
+  console.log('randomPageId', randomPageId);
+  return randomPageId;
+};
+
+export const createExchangeUrl = pageId => {
+  const exchangeUrl = `${EXCHANGE_SERVER_URL}/api/exchanges/${pageId}`;
+  console.log('exchangeUrl', exchangeUrl);
+  return exchangeUrl;
+};
+export const createDemoAppDid = pageId => {
+  const demoAppDid = `did:example:${pageId}`;
+  console.log('demoAppDid', demoAppDid);
+  return demoAppDid;
+};
