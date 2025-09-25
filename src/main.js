@@ -1,30 +1,11 @@
-import { APP_URL, WALLET_DEEP_LINK, CORS_PROXY } from '../app.config.js';
+import { APP_URL, WALLET_DEEP_LINK } from '../app.config.js';
 
 import { startPolling } from './utilities/polling.js';
 import {
   renderQrAndJson,
   generateRandomPageId,
   createExchangeUrl,
-  createDemoAppDid,
 } from './utilities/helpers.js';
-
-// Initialize exchange on page load with initial randomPageId
-(async () => {
-  try {
-    const initialPageId = generateRandomPageId();
-    const initialExchangeUrl = createExchangeUrl(initialPageId);
-    const initialDemoAppDid = createDemoAppDid(initialPageId);
-
-    await fetch(CORS_PROXY + initialExchangeUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ appInstanceDid: initialDemoAppDid }),
-    });
-    console.log('Exchange initialized:', initialExchangeUrl);
-  } catch (e) {
-    console.warn('Exchange init failed (continuing anyway):', e);
-  }
-})();
 
 // These will be created fresh on each button click
 let currentExchangeUrl = null;
