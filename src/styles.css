@@ -60,6 +60,16 @@
   margin: 20px auto;
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Spacing for the LCW button under QR */
+#qr > a.btn,
+#didQr > a.btn,
+#zcapQr > a.btn,
+#signQr > a.btn {
+  margin-top: 16px;
 }
 
 /* Code block styles */
