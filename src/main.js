@@ -4,11 +4,12 @@ import { startPolling } from './utilities/polling.js';
 import {
   renderQrAndJson,
   generateRandomPageId,
-  createExchangeUrl,
+  createExchange,
 } from './utilities/helpers.js';
 
 // These will be created fresh on each button click
 let currentExchangeUrl = null;
+
 function startVcPolling() {
   startPolling({
     spinnerId: 'spinner',
@@ -16,8 +17,11 @@ function startVcPolling() {
     showActions: () => Actions.showActions(true),
     hideActions: () => Actions.showActions(false),
     timeoutToast: 'Polling timed out',
-    onSuccess: obj => Actions.setResultJSON(obj),
+    successToast: '✅ Wallet responded!',
     exchangeUrl: currentExchangeUrl,
+    onSuccess: (obj) => {
+      Actions.setResultJSON(obj);
+    },
   });
 }
 
@@ -26,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const qrDiv = document.getElementById('qr');
   const qrTextPre = document.getElementById('qrText');
 
+  // --- Action bar initialization ---
   Actions.initActions({
     getJSON: () =>
       window.latestPayload ? JSON.stringify(window.latestPayload, null, 2) : '',
@@ -44,32 +49,60 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   Actions.showSignRequestActions(false);
 
+  // --- Verifiable Credential Exchange button handler ---
   if (btn) {
-    btn.addEventListener('click', () => {
-      // Generate fresh randomPageId for this request
-      const pageId = generateRandomPageId();
-      currentExchangeUrl = createExchangeUrl(pageId);
+    btn.addEventListener('click', async () => {
+      try {
+        // Generate fresh randomPageId
+        generateRandomPageId();
 
-      // Create fresh request with new exchange URL
-      const chapiRequest = {
-        credentialRequestOrigin: APP_URL,
-        protocols: { vcapi: currentExchangeUrl },
-      };
+        // Prepare the VPR
+        const vpRequestQuery = {
+          credentialRequestOrigin: APP_URL,
+          verifiablePresentationRequest: {
+            query: [
+              {
+                type: 'QueryByExample',
+                credentialQuery: {
+                  reason:
+                    'Please present your Verifiable Credential to complete the verification process.',
+                  example: { type: ['VerifiableCredential'] },
+                },
+              },
+            ],
+          },
+        };
 
-      const encodedRequest = encodeURI(JSON.stringify(chapiRequest));
-      const lcwRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedRequest}`;
+        // Create the exchange on the minimal-exchanger
+        currentExchangeUrl = await createExchange(vpRequestQuery);
 
-      renderQrAndJson({
-        targetDiv: qrDiv,
-        targetPre: qrTextPre,
-        requestUrl: lcwRequestUrl,
-        json: chapiRequest,
-        includeLinkFallback: true,
-      });
-      startVcPolling();
+        // Build CHAPI request for LCW
+        const chapiRequest = {
+          credentialRequestOrigin: APP_URL,
+          protocols: { vcapi: currentExchangeUrl },
+        };
+
+        const encodedRequest = encodeURI(JSON.stringify(chapiRequest));
+        const lcwRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedRequest}`;
+
+        // Render QR + JSON payload
+        renderQrAndJson({
+          targetDiv: qrDiv,
+          targetPre: qrTextPre,
+          requestUrl: lcwRequestUrl,
+          json: chapiRequest,
+          includeLinkFallback: true,
+        });
+
+        // Start polling until LCW responds
+        startVcPolling();
+      } catch (e) {
+        console.error('❌ Error during VC exchange setup:', e);
+      }
     });
   }
 
+  // --- DID Auth section initialization ---
   initDidAuthentication();
 });
 
@@ -79,41 +112,52 @@ function initDidAuthentication() {
   const didQrTextPre = document.getElementById('didQrText');
 
   if (didLoginBtn) {
-    didLoginBtn.addEventListener('click', () => {
-      // Generate fresh randomPageId for this request
-      const pageId = generateRandomPageId();
-      currentExchangeUrl = createExchangeUrl(pageId);
+    didLoginBtn.addEventListener('click', async () => {
+      try {
+        generateRandomPageId();
 
-      // Create fresh DID auth request with new exchange URL
-      const didAuthRequest = {
-        credentialRequestOrigin: APP_URL,
-        verifiablePresentationRequest: {
-          interact: {
-            type: 'UnmediatedHttpPresentationService2021',
-            serviceEndpoint: currentExchangeUrl,
+        // Prepare the DIDAuth query
+        const didAuthQuery = {
+          credentialRequestOrigin: APP_URL,
+          verifiablePresentationRequest: {
+            query: [
+              {
+                type: 'DIDAuthentication',
+                acceptedMethods: [{ method: 'key' }],
+              },
+            ],
+            challenge: '99612b24-63d9-11ea-b99f-4f66f3e4f81a',
+            domain: APP_URL,
           },
-          query: [
-            {
-              type: 'DIDAuthentication',
-              acceptedMethods: [{ method: 'key' }],
-            },
-          ],
-          challenge: '99612b24-63d9-11ea-b99f-4f66f3e4f81a',
-          domain: APP_URL,
-        },
-      };
+        };
 
-      const encodedDidAuthRequest = encodeURI(JSON.stringify(didAuthRequest));
-      const lcwDidAuthRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedDidAuthRequest}`;
+        // Create exchange on exchanger
+        currentExchangeUrl = await createExchange(didAuthQuery);
+        console.log('✅ DIDAuth exchange created:', currentExchangeUrl);
 
-      renderQrAndJson({
-        targetDiv: didQrDiv,
-        targetPre: didQrTextPre,
-        requestUrl: lcwDidAuthRequestUrl,
-        json: didAuthRequest,
-        includeLinkFallback: true,
-      });
-      startDidAuthPolling();
+        // Build CHAPI request for LCW
+        const chapiRequest = {
+          credentialRequestOrigin: APP_URL,
+          protocols: { vcapi: currentExchangeUrl },
+        };
+
+        const encodedDidAuthRequest = encodeURI(JSON.stringify(chapiRequest));
+        const lcwDidAuthRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedDidAuthRequest}`;
+
+        // Render DID Auth QR
+        renderQrAndJson({
+          targetDiv: didQrDiv,
+          targetPre: didQrTextPre,
+          requestUrl: lcwDidAuthRequestUrl,
+          json: chapiRequest,
+          includeLinkFallback: true,
+        });
+
+        // Start polling for DIDAuth response
+        startDidAuthPolling();
+      } catch (e) {
+        console.error('❌ Error during DID Auth setup:', e);
+      }
     });
   }
 }
@@ -122,8 +166,12 @@ function startDidAuthPolling() {
   startPolling({
     spinnerId: 'didSpinner',
     resultId: 'didResult',
-    successToast: 'DID authentication successful!',
-    timeoutToast: 'DID authentication timed out',
+    successToast: '✅ DID authentication successful!',
+    timeoutToast: '⏰ DID authentication timed out',
     exchangeUrl: currentExchangeUrl,
+    onSuccess: (obj) => {
+      console.log('✅ DID Auth complete:', obj);
+      Actions.setResultJSON(obj);
+    },
   });
 }
