@@ -1,23 +1,31 @@
 import { CORS_PROXY } from '../../app.config.js';
 
-import { hide, show, safeParse, highlight } from './helpers.js';
+import { hide, show, highlight } from './helpers.js';
 
 let pollInterval = null;
 export let latestPayload = null;
 
-async function pollOnce(exchangeUrl, onFetch) {
+async function pollOnce(exchangeUrl, onFetch, onNotFound) {
   try {
-    const res = await fetch(CORS_PROXY + exchangeUrl);
-    if (!res.ok) return;
-    const text = await res.text();
-    let payload;
-    try {
-      payload = JSON.parse(text);
-    } catch {
-      payload = text;
+    const res = await fetch(exchangeUrl);
+    if (res.status === 404) {
+      onNotFound?.();
+      return;
     }
-    const obj = typeof payload === 'string' ? safeParse(payload) : payload;
-    if (obj?.verifiablePresentation || obj?.vp || obj?.zcap) onFetch(obj);
+    if (!res.ok) return;
+    const obj = await res.json().catch(() => null);
+    if (!obj) return;
+
+    // Server responses:
+    // { id, sequence: 0, state: 'pending' }  -> keep polling
+    // { id, sequence: 1, state: 'complete', response: {...} } -> done
+    if (obj?.state === 'pending') return; // keep polling
+
+    if (obj?.state === 'complete') {
+      const result = obj.response ?? obj;
+      onFetch(result);
+      return;
+    }
   } catch (e) {
     console.log('Polling error', e);
   }
@@ -61,6 +69,15 @@ export function startPolling({
       showActions?.();
       onSuccess?.(obj);
       if (successToast && window.M?.toast) M.toast({ html: successToast });
+    }, () => {
+      clearInterval(pollInterval);
+      pollInterval = null;
+      hide(spinnerEl);
+      if (resultEl) {
+        resultEl.textContent = 'Exchange not found (404). Please try again.';
+        highlight(resultEl);
+      }
+      hideActions?.();
     });
   }, 3000);
 

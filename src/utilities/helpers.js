@@ -1,4 +1,4 @@
-import { EXCHANGE_SERVER_URL } from '../../app.config.js';
+import { EXCHANGER_SERVER_URL } from '../../app.config.js';
 
 export const show = (el, css = 'block') => el && (el.style.display = css);
 export const hide = el => el && (el.style.display = 'none');
@@ -114,11 +114,39 @@ export const generateRandomPageId = () => {
   return randomPageId;
 };
 
-export const createExchangeUrl = pageId => {
-  const exchangeUrl = `${EXCHANGE_SERVER_URL}/api/exchanges/${pageId}`;
-  console.log('exchangeUrl', exchangeUrl);
-  return exchangeUrl;
+export const createExchange = async query => {
+  // POST the query to the exchanger and return the exchange instance URL
+  const url = `${EXCHANGER_SERVER_URL}/workflows/ephemeral/exchanges`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+    },
+    // Server expects the payload under a top-level "request" field
+    body: JSON.stringify({ request: query }),
+  });
+  console.log('🚀 ~ createExchange ~ res:', res)
+  if (!res.ok) {
+    throw new Error('Failed to create exchange');
+  }
+  // Prefer Location header (used by deployed server), fallback to JSON body
+  const headerLocation = res.headers?.get?.('Location') || res.headers?.get?.('location');
+  if (headerLocation) {
+    console.log('🚀 ~ createExchange ~ headerLocation:', headerLocation)
+    return headerLocation;
+  }
+  try {
+    const body = await res.json();
+    const location = body?.location;
+    console.log('🚀 ~ createExchange ~ body.location:', location)
+    if (!location) throw new Error('Missing location in response body');
+    return location;
+  } catch (e) {
+    console.error('Failed to parse exchange location from response', e);
+    throw new Error('Failed to determine exchange URL');
+  }
 };
+
 export const createDemoAppDid = pageId => {
   const demoAppDid = `did:example:${pageId}`;
   console.log('demoAppDid', demoAppDid);
