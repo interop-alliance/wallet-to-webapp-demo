@@ -1,9 +1,5 @@
 import { APP_URL, WALLET_DEEP_LINK } from '../../app.config.js';
-import {
-  renderQrAndJson,
-  generateRandomPageId,
-  createExchangeUrl,
-} from '../utilities/helpers.js';
+import { renderQrAndJson, generateRandomPageId, createExchange } from '../utilities/helpers.js';
 import { startPolling } from '../utilities/polling.js';
 
 function buildZcapRequest(controllerDid, targetUrl, exchangeUrl) {
@@ -52,40 +48,48 @@ function initZcapRequest() {
   const targetUrlInput = document.getElementById('targetUrl');
 
   if (zcapBtn) {
-    zcapBtn.addEventListener('click', () => {
-      // Generate fresh randomPageId for this request
-      const pageId = generateRandomPageId();
-      const exchangeUrl = createExchangeUrl(pageId);
+    zcapBtn.addEventListener('click', async () => {
+      // Generate fresh randomPageId for this request (kept for demo logs)
+      generateRandomPageId();
 
       const controllerDid = controllerDidInput.value || 'did:example:12345';
       const targetUrl =
         targetUrlInput.value || 'https://example.com/api/endpoint';
 
-      const zcapRequest = buildZcapRequest(
-        controllerDid,
-        targetUrl,
-        exchangeUrl
-      );
-      const encodedZcapRequest = encodeURI(JSON.stringify(zcapRequest));
-      const lcwZcapRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedZcapRequest}`;
+      // Build query to POST to exchanger (without needing the exchange URL yet)
+      const zcapQuery = buildZcapRequest(controllerDid, targetUrl, '');
+      try {
+        const exchangeUrl = await createExchange(zcapQuery);
 
-      renderQrAndJson({
-        targetDiv: zcapQrDiv,
-        targetPre: zcapQrTextPre,
-        requestUrl: lcwZcapRequestUrl,
-        json: zcapRequest,
-        includeLinkFallback: true,
-      });
+        // Build the wallet request embedding the actual exchange URL for display
+        const zcapRequest = buildZcapRequest(
+          controllerDid,
+          targetUrl,
+          exchangeUrl
+        );
+        const encodedZcapRequest = encodeURI(JSON.stringify(zcapRequest));
+        const lcwZcapRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedZcapRequest}`;
 
-      startPolling({
-        spinnerId: 'zcapSpinner',
-        resultId: 'zcapResult',
-        showActions: () => Actions.showZcapActions(true),
-        hideActions: () => Actions.showZcapActions(false),
-        successToast: 'zCap request successful!',
-        timeoutToast: 'zCap request timed out',
-        exchangeUrl: exchangeUrl,
-      });
+        renderQrAndJson({
+          targetDiv: zcapQrDiv,
+          targetPre: zcapQrTextPre,
+          requestUrl: lcwZcapRequestUrl,
+          json: zcapRequest,
+          includeLinkFallback: true,
+        });
+
+        startPolling({
+          spinnerId: 'zcapSpinner',
+          resultId: 'zcapResult',
+          showActions: () => Actions.showZcapActions(true),
+          hideActions: () => Actions.showZcapActions(false),
+          successToast: 'zCap request successful!',
+          timeoutToast: 'zCap request timed out',
+          exchangeUrl: exchangeUrl,
+        });
+      } catch (e) {
+        console.error(e);
+      }
     });
   }
 }
