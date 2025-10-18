@@ -1,9 +1,5 @@
 import { WALLET_DEEP_LINK } from '../../app.config.js';
-import {
-  renderQrAndJson,
-  generateRandomPageId,
-  createExchangeUrl,
-} from '../utilities/helpers.js';
+import { renderQrAndJson, generateRandomPageId, createExchange } from '../utilities/helpers.js';
 import { startPolling } from '../utilities/polling.js';
 
 function buildSignRequest(controllerDid, exchangeUrl) {
@@ -54,32 +50,40 @@ function initSignRequest() {
     localStorage.getItem('controllerDid') || 'did:example:12345';
 
   if (signBtn) {
-    signBtn.addEventListener('click', () => {
-      // Generate fresh randomPageId for this request
-      const pageId = generateRandomPageId();
-      const exchangeUrl = createExchangeUrl(pageId);
+    signBtn.addEventListener('click', async () => {
+      // Generate fresh randomPageId for this request (kept for demo logs)
+      generateRandomPageId();
 
-      const signRequest = buildSignRequest(controllerDid, exchangeUrl);
-      const encodedSignRequest = encodeURI(JSON.stringify(signRequest));
-      const lcwSignRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedSignRequest}`;
+      // Create an exchange for the sign/issue request
+      const signQuery = buildSignRequest(controllerDid, '');
+      try {
+        const exchangeUrl = await createExchange(signQuery);
 
-      renderQrAndJson({
-        targetDiv: signQrDiv,
-        targetPre: signQrTextPre,
-        requestUrl: lcwSignRequestUrl,
-        json: signRequest,
-        includeLinkFallback: false,
-      });
+        // Now embed the actual exchange URL into the request for wallet deep link visibility
+        const signRequest = buildSignRequest(controllerDid, exchangeUrl);
+        const encodedSignRequest = encodeURI(JSON.stringify(signRequest));
+        const lcwSignRequestUrl = `${WALLET_DEEP_LINK}?request=${encodedSignRequest}`;
 
-      startPolling({
-        spinnerId: 'signSpinner',
-        resultId: 'signResult',
-        showActions: () => Actions.showSignRequestActions(true),
-        hideActions: () => Actions.showSignRequestActions(false),
-        successToast: 'Sign request successful!',
-        timeoutToast: 'Polling timed out',
-        exchangeUrl: exchangeUrl,
-      });
+        renderQrAndJson({
+          targetDiv: signQrDiv,
+          targetPre: signQrTextPre,
+          requestUrl: lcwSignRequestUrl,
+          json: signRequest,
+          includeLinkFallback: false,
+        });
+
+        startPolling({
+          spinnerId: 'signSpinner',
+          resultId: 'signResult',
+          showActions: () => Actions.showSignRequestActions(true),
+          hideActions: () => Actions.showSignRequestActions(false),
+          successToast: 'Sign request successful!',
+          timeoutToast: 'Polling timed out',
+          exchangeUrl: exchangeUrl,
+        });
+      } catch (e) {
+        console.error(e);
+      }
     });
   }
 }
