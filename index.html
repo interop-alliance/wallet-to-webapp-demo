@@ -17,6 +17,9 @@
     <!-- QR Code generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+    <!-- CHAPI (Credential Handler API) polyfill -- web-app to web-wallet flow -->
+    <script src="https://unpkg.com/credential-handler-polyfill@3/dist/credential-handler-polyfill.min.js"></script>
+
     <!-- Highlight.js -->
     <link
       rel="stylesheet"
@@ -41,17 +44,20 @@
       <div class="row">
         <div class="col s12">
           <ul class="tabs tabs-fixed-width">
-            <li class="tab col s3">
+            <li class="tab">
               <a href="#tab-request">Request credential</a>
             </li>
-            <li class="tab col s3">
+            <li class="tab">
               <a href="#tab-did-login">DID Login</a>
             </li>
-            <li class="tab col s3">
+            <li class="tab">
               <a href="#tab-zcap">Request zCap</a>
             </li>
-            <li class="tab col s3">
+            <li class="tab">
               <a href="#tab-sign">Sign/Issue via Wallet</a>
+            </li>
+            <li class="tab">
+              <a href="#tab-login">Login</a>
             </li>
           </ul>
         </div>
@@ -318,6 +324,86 @@ No sign/issue result yet.</pre
             </a>
           </div>
         </div>
+
+        <!-- Tab 5: Login with Wallet (web-app to web-wallet CHAPI) -->
+        <div
+          id="tab-login"
+          class="tab-content"
+        >
+          <p class="center-align grey-text text-darken-2">
+            Sends a single CHAPI request combining DID Authentication, a Login
+            Credential query, and WAS storage capability (zcap) grants to a web
+            wallet, then displays the signed Verifiable Presentation the wallet
+            returns. Unlike the other tabs, this uses the direct web-app to
+            web-wallet CHAPI flow (no QR code / exchanger).
+          </p>
+
+          <div class="row">
+            <div class="input-field col s12">
+              <input
+                id="loginControllerDid"
+                type="text"
+                value="did:key:z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+              />
+              <label for="loginControllerDid"
+                >Relying Party DID (zcap controller)</label
+              >
+            </div>
+          </div>
+
+          <div class="row center-align">
+            <a
+              id="loginBtn"
+              class="btn waves-effect waves-light green"
+            >
+              <i class="material-icons left">login</i> Login with Wallet
+            </a>
+          </div>
+
+          <div
+            id="loginSpinner"
+            class="spinner"
+          >
+            <div class="preloader-wrapper big active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
+                </div>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
+                </div>
+              </div>
+            </div>
+            <p>Waiting for wallet...</p>
+          </div>
+
+          <h5>Wallet Response</h5>
+          <pre
+            id="loginResult"
+            class="language-json"
+          >
+No response yet.</pre
+          >
+
+          <div
+            id="loginActions"
+            class="actions"
+          >
+            <a
+              id="loginCopyBtn"
+              class="btn waves-effect waves-light green lighten-1"
+            >
+              <i class="material-icons left">content_copy</i> Copy JSON
+            </a>
+            <a
+              id="loginDownloadBtn"
+              class="btn waves-effect waves-light green lighten-2"
+            >
+              <i class="material-icons left">download</i> Download JSON
+            </a>
+          </div>
+        </div>
       </div>
 
       <footer class="footer center-align">
@@ -340,6 +426,10 @@ No sign/issue result yet.</pre
     <script
       type="module"
       src="src/tabs/sign-request.js"
+    ></script>
+    <script
+      type="module"
+      src="src/tabs/login.js"
     ></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="src/tabs/index.js"></script>
