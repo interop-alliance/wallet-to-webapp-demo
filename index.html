@@ -17,8 +17,10 @@
     <!-- QR Code generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    <!-- CHAPI (Credential Handler API) polyfill -- web-app to web-wallet flow -->
-    <script src="https://unpkg.com/credential-handler-polyfill@3/dist/credential-handler-polyfill.min.js"></script>
+    <!-- CHAPI (Credential Handler API) polyfill -- web-app to web-wallet flow.
+         v4 adds the `chapi.interact()` API used by the "Open in Web Wallet"
+         buttons; it does not depend on `navigator.credentials`. -->
+    <script src="https://unpkg.com/credential-handler-polyfill@4/dist/credential-handler-polyfill.min.js"></script>
 
     <!-- Highlight.js -->
     <link
@@ -83,6 +85,20 @@ QR code not generated yet, click Request a single VC.</pre
           >
 
           <div
+            id="requestChapiRow"
+            class="row center-align"
+            style="display: none"
+          >
+            <a
+              id="requestChapiBtn"
+              class="btn waves-effect waves-light blue"
+            >
+              <i class="material-icons left">account_balance_wallet</i> Open in
+              Web Wallet (CHAPI)
+            </a>
+          </div>
+
+          <div
             id="spinner"
             class="spinner"
           >
@@ -145,6 +161,20 @@ No credential yet.</pre
           <pre id="didQrText">
 QR code not generated yet, click Login with DID.</pre
           >
+
+          <div
+            id="didChapiRow"
+            class="row center-align"
+            style="display: none"
+          >
+            <a
+              id="didChapiBtn"
+              class="btn waves-effect waves-light blue"
+            >
+              <i class="material-icons left">account_balance_wallet</i> Open in
+              Web Wallet (CHAPI)
+            </a>
+          </div>
 
           <div
             id="didSpinner"
@@ -216,6 +246,20 @@ QR code not generated yet, click Request zCap.</pre
           >
 
           <div
+            id="zcapChapiRow"
+            class="row center-align"
+            style="display: none"
+          >
+            <a
+              id="zcapChapiBtn"
+              class="btn waves-effect waves-light blue"
+            >
+              <i class="material-icons left">account_balance_wallet</i> Open in
+              Web Wallet (CHAPI)
+            </a>
+          </div>
+
+          <div
             id="zcapSpinner"
             class="spinner"
           >
@@ -281,6 +325,20 @@ QR code not generated yet, click Sign/Issue via Wallet.</pre
           >
 
           <div
+            id="signChapiRow"
+            class="row center-align"
+            style="display: none"
+          >
+            <a
+              id="signChapiBtn"
+              class="btn waves-effect waves-light blue"
+            >
+              <i class="material-icons left">account_balance_wallet</i> Open in
+              Web Wallet (CHAPI)
+            </a>
+          </div>
+
+          <div
             id="signSpinner"
             class="spinner"
           >
@@ -334,8 +392,8 @@ No sign/issue result yet.</pre
             Sends a single CHAPI request combining DID Authentication, a Login
             Credential query, and WAS storage capability (zcap) grants to a web
             wallet, then displays the signed Verifiable Presentation the wallet
-            returns. Unlike the other tabs, this uses the direct web-app to
-            web-wallet CHAPI flow (no QR code / exchanger).
+            returns. Opens the wallet directly in the browser via the new
+            <code>chapi.interact()</code> API (no QR code).
           </p>
 
           <div class="row">

@@ -2,15 +2,23 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { startPolling } from '../src/utilities/polling.js';
 
-// Mock fetch to return a valid payload once
+// Mock fetch to return a completed exchange once. The exchanger answers a poll
+// with `{ state, response }`; a completed exchange carries the wallet's payload
+// under `response`.
 const payload = { verifiablePresentation: { proof: { type: 'Ed25519' } } };
 
 function mockSuccessfulFetchOnce() {
   let called = false;
   global.fetch = vi.fn(async () => {
-    if (called) return { ok: true, text: async () => '{}' };
+    if (called) {
+      return { ok: true, status: 200, json: async () => ({ state: 'pending' }) };
+    }
     called = true;
-    return { ok: true, text: async () => JSON.stringify(payload) };
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ state: 'complete', response: payload }),
+    };
   });
 }
 
@@ -37,6 +45,7 @@ describe('utilities/polling', () => {
     startPolling({
       spinnerId: 'spinnerX',
       resultId: 'resultX',
+      exchangeUrl: 'https://exchanger.example/workflows/ephemeral/exchanges/z1',
       timeoutToast: null,
     });
 

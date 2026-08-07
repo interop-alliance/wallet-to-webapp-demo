@@ -1,29 +1,25 @@
 /**
- * "Login with Wallet" tab -- the web-app to web-wallet CHAPI flow.
+ * "Login with Wallet" tab -- the web-app to web-wallet CHAPI flow, using the
+ * new `chapi.interact()` API.
  *
- * Unlike the other tabs (which POST a VP Request to the minimal-exchanger and
- * poll / render a QR for a mobile wallet), this tab talks directly to a web
- * wallet registered as a CHAPI handler in the same browser. It sends a single
- * Verifiable Presentation Request that combines three queries -- DID
- * Authentication, a Login Credential (`QueryByExample`), and WAS storage
- * capability grants (`AuthorizationCapabilityQuery`) -- via
- * `navigator.credentials.get()`, then displays the signed Verifiable
- * Presentation (with its embedded `zcap` array) that the wallet returns.
+ * It sends a single Verifiable Presentation Request that combines three queries
+ * -- DID Authentication, a Login Credential (`QueryByExample`), and WAS storage
+ * capability grants (`AuthorizationCapabilityQuery`) -- to a web wallet. Like
+ * the other tabs it POSTs that request to the minimal-exchanger and then hands
+ * the resulting exchange URL to the user's registered web wallet via
+ * `chapi.interact()` (which, unlike the old `navigator.credentials.get()`, does
+ * not depend on `navigator.credentials`). The wallet's signed Verifiable
+ * Presentation (with its embedded `zcap` array) comes back through the
+ * exchange, retrieved by polling.
  */
 
-import { show, hide, highlight } from '../utilities/helpers.js';
+import { APP_URL } from '../../app.config.js';
+import { show, hide, highlight, createExchange } from '../utilities/helpers.js';
+import { startPolling } from '../utilities/polling.js';
+import { interactWithWallet } from '../utilities/chapi.js';
 
 /**
- * CHAPI mediator origin. `authn.io` is the default mediator that brokers
- * between this relying party and whichever web wallet the user has registered.
- */
-const MEDIATOR = `https://authn.io/mediator?${encodeURIComponent(
-  `origin=${window.location.origin}`
-)}`;
-
-/**
- * Builds the "Login with Wallet" VP Request body (the value CHAPI hands the
- * wallet as `web.VerifiablePresentation`): a DID Authentication proof, a
+ * Builds the "Login with Wallet" VP Request body: a DID Authentication proof, a
  * best-effort Login Credential query, and a set of WAS capability grants
  * described abstractly so the wallet maps them onto its own Space.
  *
@@ -59,7 +55,7 @@ function buildLoginRequest({ controllerDid, challenge, domain }) {
             allowedAction: ['GET', 'HEAD', 'PUT', 'POST', 'DELETE'],
             controller: controllerDid,
             invocationTarget: {
-              type: 'urn:was:collection',
+              type: 'https://w3id.org/byoe#collection',
               name: 'demo-app-data',
             },
           },
@@ -68,7 +64,7 @@ function buildLoginRequest({ controllerDid, challenge, domain }) {
             reason: 'This demo app reads your wallet Space.',
             allowedAction: ['GET', 'HEAD'],
             controller: controllerDid,
-            invocationTarget: { type: 'urn:was:space' },
+            invocationTarget: { type: 'https://w3id.org/byoe#space' },
           },
         ],
       },
@@ -87,7 +83,8 @@ function buildLoginRequest({ controllerDid, challenge, domain }) {
 function setLoginResult(obj) {
   const resultPre = document.getElementById('loginResult');
   if (!resultPre) return;
-  resultPre.textContent = JSON.stringify(obj, null, 2);
+  resultPre.textContent =
+    typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
   highlight(resultPre);
 }
 
@@ -135,17 +132,7 @@ function initLoginActions() {
   }
 }
 
-async function initLoginWithWallet() {
-  // Load the CHAPI polyfill so navigator.credentials routes through the mediator.
-  if (window.credentialHandlerPolyfill) {
-    window.credentialHandlerPolyfill
-      .loadOnce(MEDIATOR)
-      .then(() => console.log('CHAPI polyfill loaded.'))
-      .catch(err => console.error('Error loading CHAPI polyfill:', err));
-  } else {
-    console.error('credential-handler-polyfill did not load.');
-  }
-
+function initLoginWithWallet() {
   initLoginActions();
 
   const loginBtn = document.getElementById('loginBtn');
@@ -170,29 +157,35 @@ async function initLoginWithWallet() {
     });
 
     hide(actions);
-    show(spinner);
     setLoginResult('Waiting for wallet...');
 
     try {
-      // Web-app to web-wallet CHAPI request. The mediator opens the user's
-      // registered wallet popup; `web.VerifiablePresentation` is the VPR body.
-      const result = await navigator.credentials.get({
-        web: { VerifiablePresentation: verifiablePresentationRequest },
+      // Create an exchange carrying the login VPR on the minimal-exchanger.
+      const exchangeUrl = await createExchange({
+        credentialRequestOrigin: APP_URL,
+        verifiablePresentationRequest,
       });
 
-      if (!result) {
-        setLoginResult('No response (the request was cancelled or dismissed).');
-        return;
-      }
+      // Poll the exchange for the wallet's response, and open the user's
+      // registered web wallet on that same exchange URL via chapi.interact().
+      startPolling({
+        spinnerId: 'loginSpinner',
+        resultId: 'loginResult',
+        exchangeUrl,
+        successToast: '✅ Wallet responded!',
+        timeoutToast: 'Timed out waiting for wallet.',
+        showActions: () => show(actions, 'flex'),
+        hideActions: () => hide(actions),
+      });
 
-      // A WebCredential wraps the wallet's response VP under `.data`.
-      setLoginResult(result.data ?? result);
-      show(actions, 'flex');
-      toast('✅ Wallet responded!');
+      await interactWithWallet({ interactionUrl: exchangeUrl });
     } catch (err) {
-      console.error('❌ Login with Wallet failed:', err);
-      setLoginResult({ error: err?.message || String(err) });
-    } finally {
+      if (err?.name === 'AbortError') {
+        toast('Wallet interaction cancelled.');
+      } else {
+        console.error('❌ Login with Wallet failed:', err);
+        setLoginResult({ error: err?.message || String(err) });
+      }
       hide(spinner);
     }
   });

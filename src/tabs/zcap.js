@@ -1,6 +1,7 @@
 import { APP_URL, WALLET_DEEP_LINK } from '../../app.config.js';
 import { renderQrAndJson, generateRandomPageId, createExchange } from '../utilities/helpers.js';
 import { startPolling } from '../utilities/polling.js';
+import { wireChapiButton } from '../utilities/chapi.js';
 
 function buildZcapRequest(controllerDid, targetUrl, exchangeUrl) {
   return {
@@ -47,6 +48,11 @@ function initZcapRequest() {
   const controllerDidInput = document.getElementById('controllerDid');
   const targetUrlInput = document.getElementById('targetUrl');
 
+  const zcapChapi = wireChapiButton({
+    buttonId: 'zcapChapiBtn',
+    rowId: 'zcapChapiRow',
+  });
+
   if (zcapBtn) {
     zcapBtn.addEventListener('click', async () => {
       // Generate fresh randomPageId for this request (kept for demo logs)
@@ -77,6 +83,9 @@ function initZcapRequest() {
           json: zcapRequest,
           includeLinkFallback: true,
         });
+
+        // Offer the same exchange to a browser-registered web wallet via CHAPI.
+        zcapChapi.setUrl(exchangeUrl);
 
         startPolling({
           spinnerId: 'zcapSpinner',

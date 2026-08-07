@@ -1,6 +1,7 @@
 import { WALLET_DEEP_LINK } from '../../app.config.js';
 import { renderQrAndJson, generateRandomPageId, createExchange } from '../utilities/helpers.js';
 import { startPolling } from '../utilities/polling.js';
+import { wireChapiButton } from '../utilities/chapi.js';
 
 function buildSignRequest(controllerDid, exchangeUrl) {
   return {
@@ -49,6 +50,11 @@ function initSignRequest() {
   const controllerDid =
     localStorage.getItem('controllerDid') || 'did:example:12345';
 
+  const signChapi = wireChapiButton({
+    buttonId: 'signChapiBtn',
+    rowId: 'signChapiRow',
+  });
+
   if (signBtn) {
     signBtn.addEventListener('click', async () => {
       // Generate fresh randomPageId for this request (kept for demo logs)
@@ -71,6 +77,9 @@ function initSignRequest() {
           json: signRequest,
           includeLinkFallback: false,
         });
+
+        // Offer the same exchange to a browser-registered web wallet via CHAPI.
+        signChapi.setUrl(exchangeUrl);
 
         startPolling({
           spinnerId: 'signSpinner',

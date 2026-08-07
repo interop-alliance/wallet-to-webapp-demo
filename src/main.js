@@ -6,9 +6,15 @@ import {
   generateRandomPageId,
   createExchange,
 } from './utilities/helpers.js';
+import { wireChapiButton } from './utilities/chapi.js';
 
 // These will be created fresh on each button click
 let currentExchangeUrl = null;
+
+// "Open in Web Wallet (CHAPI)" buttons; each is revealed once its tab has an
+// exchange URL to hand a registered web wallet via `chapi.interact()`.
+let requestChapi;
+let didChapi;
 
 function startVcPolling() {
   startPolling({
@@ -48,6 +54,16 @@ document.addEventListener('DOMContentLoaded', () => {
       window.latestPayload ? JSON.stringify(window.latestPayload, null, 2) : '',
   });
   Actions.showSignRequestActions(false);
+
+  // Wire the CHAPI "Open in Web Wallet" buttons for the two tabs on this page.
+  requestChapi = wireChapiButton({
+    buttonId: 'requestChapiBtn',
+    rowId: 'requestChapiRow',
+  });
+  didChapi = wireChapiButton({
+    buttonId: 'didChapiBtn',
+    rowId: 'didChapiRow',
+  });
 
   // --- Verifiable Credential Exchange button handler ---
   if (btn) {
@@ -93,6 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
           json: chapiRequest,
           includeLinkFallback: true,
         });
+
+        // Offer the same exchange to a browser-registered web wallet via CHAPI.
+        requestChapi?.setUrl(currentExchangeUrl);
 
         // Start polling until LCW responds
         startVcPolling();
@@ -152,6 +171,9 @@ function initDidAuthentication() {
           json: chapiRequest,
           includeLinkFallback: true,
         });
+
+        // Offer the same exchange to a browser-registered web wallet via CHAPI.
+        didChapi?.setUrl(currentExchangeUrl);
 
         // Start polling for DIDAuth response
         startDidAuthPolling();
